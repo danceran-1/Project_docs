@@ -1,0 +1,9 @@
+    .container-fluid{
+        background-images:url(1.jpg);
+        height:100vh;
+    }
+
+
+    body {
+        margin: 0;
+    }
