@@ -5,30 +5,32 @@ from .forms import CriterionForm
 from django.conf import settings
 from django.db import connection
 import os
+import bcrypt 
 
 
 def index(request):
     return render(request, 'main/index.html')
 
 
-def special_users(request,password,user_id):
-    
-    with connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT loggin FROM loging_password WHERE password = %s AND id = %s",
-            [password, user_id]
-            )
-        
-        auth_data = cursor.fetchone()
+def special_users(request,password,loggin,spesial_password):
 
-        if not auth_data:
-            error_message = 'Неверный пароль для спецпользователя'
-            return render(request, 'main/about.html',
-                    {'form': RegistrationForm(), 'error_message': error_message})
+        try:
+            hash_bytes = spesial_password.encode('utf-8')
+            
+            if bcrypt.checkpw(password.encode('utf-8'), hash_bytes):
+                success_message = f"Авторизация для {loggin} выполнена успешно"
+                request.session['is_special'] = True
+                return redirect('success')
 
-        name = auth_data[0]
-        request.session['is_special'] = True
-        return redirect('success')
+            else:
+                error_message = 'Неверный пароль'
+                return render(request, 'main/about.html',
+                        {'form': RegistrationForm(), 'error_message': error_message})
+            
+        except Exception as e:
+                error_message = 'Ошибка аутентификации'
+                return render(request, 'main/about.html',
+                           {'form': RegistrationForm(), 'error_message': error_message})
 
 
 def about(request):
@@ -39,43 +41,28 @@ def about(request):
         with connection.cursor() as cursor:
             # сначала ищем спец пользователей
             cursor.execute(
-                "SELECT id FROM loging_password WHERE loggin = %s",
+                "SELECT loggin,password FROM loging_password WHERE loggin = %s",
                 [username]
             )
             special = cursor.fetchone()
 
             if special:
-                return special_users(request, password, special[0])
+                return special_users(request, password,special[0],special[1])
 
             # тут обычных
             cursor.execute(
-                "SELECT id FROM users WHERE name = %s",
+                "SELECT user_password,name FROM users WHERE name = %s",
                 [username]
             )
             user_data = cursor.fetchone()
 
-            if not user_data:
+            if user_data:
+                return special_users(request, password,user_data[1],user_data[0])
+
+            else:
                 error_message = 'Пользователь не найден'
                 return render(request, 'main/about.html', 
                            {'form': RegistrationForm(), 'error_message': error_message})
-
-            user_id = user_data[0]
-
-            cursor.execute(
-                "SELECT name FROM users WHERE user_password = %s AND id = %s",
-                [password, user_id]
-            )
-            auth_data = cursor.fetchone()
-
-            if not auth_data:
-                error_message = 'Неверный пароль'
-                return render(request, 'main/about.html',
-                           {'form': RegistrationForm(), 'error_message': error_message})
-
-            name = auth_data[0]
-            request.session['user_id'] = user_id
-            success_message = f"Авторизация для {name} выполнена успешно"
-            return redirect('success')
 
     else:
         return render(request, 'main/about.html', {'form': RegistrationForm()})
