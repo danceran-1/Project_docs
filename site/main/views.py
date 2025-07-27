@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from .forms import RegistrationForm_true 
 from .forms import RegistrationForm
 from .models import User
 from .forms import CriterionForm
@@ -12,7 +13,7 @@ def index(request):
     return render(request, 'main/index.html')
 
 
-def special_users(request,password,loggin,spesial_password):
+def password_check(request,password,loggin,spesial_password):
 
         try:
             hash_bytes = spesial_password.encode('utf-8')
@@ -34,6 +35,7 @@ def special_users(request,password,loggin,spesial_password):
 
 
 def about(request):
+    """Авторизация"""
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -47,7 +49,7 @@ def about(request):
             special = cursor.fetchone()
 
             if special:
-                return special_users(request, password,special[0],special[1])
+                return password_check(request, password,special[0],special[1])
 
             # тут обычных
             cursor.execute(
@@ -57,7 +59,7 @@ def about(request):
             user_data = cursor.fetchone()
 
             if user_data:
-                return special_users(request, password,user_data[1],user_data[0])
+                return password_check(request, password,user_data[1],user_data[0])
 
             else:
                 error_message = 'Пользователь не найден'
@@ -67,6 +69,16 @@ def about(request):
     else:
         return render(request, 'main/about.html', {'form': RegistrationForm()})
 
+def registr(request):
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+    with connection.cursor() as cursor:
+        pass
+    
+    return render(request, 'main/registr.html', {'form': RegistrationForm_true})
 
 def success(request):
     if request.method == 'POST':
