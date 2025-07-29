@@ -12,7 +12,7 @@ INSERT INTO roles (role_name) VALUES ('guest');
 DROP TABLE IF EXISTS users;
 CREATE TABLE users(
     id SERIAL PRIMARY KEY,
-    name VARCHAR(20) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL UNIQUE,
     user_password  VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT NOW()
 );

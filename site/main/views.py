@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .forms import RegistrationForm_true 
+
 from .forms import RegistrationForm
 from .models import User
 from .forms import CriterionForm
@@ -70,15 +70,35 @@ def about(request):
         return render(request, 'main/about.html', {'form': RegistrationForm()})
 
 def registr(request):
-
+    error_message = None
+    
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
 
-    with connection.cursor() as cursor:
-        pass
+        if password != confirm_password:
+            error_message = 'Пароли не совпадают'
+            return render(request, 'main/registr.html', 
+                        {'error_message': error_message})
+        
+        try:
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+            hashed_password_str = hashed_password.decode('utf-8')
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO users (name, user_password) VALUES (%s, %s)",
+                    [username, hashed_password_str]
+                )
+            
+            return redirect("success") 
+        
+        except Exception as e:
+            error_message = f"Ошибка при регистрации: {str(e)}"
     
-    return render(request, 'main/registr.html', {'form': RegistrationForm_true})
+    return render(request, 'main/registr.html', {'error_message': error_message})
 
 def success(request):
     if request.method == 'POST':
