@@ -1,6 +1,13 @@
 from django import forms
 from .models import User
 from .models import Criterion
+from captcha.fields import CaptchaField
+
+class LoginForm(forms.Form):
+    username = forms.EmailField()
+    password = forms.CharField(widget=forms.PasswordInput)
+    confirm_password = forms.CharField(widget=forms.PasswordInput)
+    captcha = CaptchaField()
 
 class RegistrationForm(forms.ModelForm):
     """Это авторизация"""
@@ -19,8 +26,6 @@ class RegistrationForm(forms.ModelForm):
         if password != confirm_password:
             raise forms.ValidationError('Passwords do not match')
         
-
-
 
 class CriterionForm(forms.ModelForm):
     class Meta:

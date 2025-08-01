@@ -1,12 +1,18 @@
 from django.shortcuts import render, redirect
 
-from .forms import RegistrationForm
+from django.core.exceptions import ValidationError
+from .forms import RegistrationForm, LoginForm
 from .models import User
 from .forms import CriterionForm
 from django.conf import settings
 from django.db import connection
+from django.core.cache import cache
+from django.utils import timezone
 import os
 import bcrypt 
+from django_ratelimit.decorators import ratelimit
+from django.core.validators import RegexValidator
+from django.contrib.auth.password_validation import validate_password
 
 
 def index(request):
@@ -15,15 +21,34 @@ def index(request):
 
 def password_check(request,password,loggin,spesial_password):
 
+        lock_key = f'login_lock_{loggin}'
+        lock_time = cache.get(lock_key)
+        print(f"Lock time from cache: {lock_time}") 
+
+        if lock_time:
+            remaining = (lock_time - timezone.now()).seconds
+            return render(request, 'main/about.html', {
+                'form': RegistrationForm(),
+                'error_message': f"Потворите попыптку через {remaining} секунд"
+            })
+
+        fail_count = cache.get(f'login_fails_{loggin}', 0)
+
         try:
             hash_bytes = spesial_password.encode('utf-8')
             
             if bcrypt.checkpw(password.encode('utf-8'), hash_bytes):
                 success_message = f"Авторизация для {loggin} выполнена успешно"
-                request.session['is_special'] = True
                 return redirect('success')
 
             else:
+                
+                fail_count += 1
+                cache.set(f'login_fails_{loggin}', fail_count, timeout=300)
+
+                if fail_count > 4:
+                    cache.set(lock_key, timezone.now() + timezone.timedelta(minutes=2), timeout=120)
+
                 error_message = 'Неверный пароль'
                 return render(request, 'main/about.html',
                         {'form': RegistrationForm(), 'error_message': error_message})
@@ -34,11 +59,44 @@ def password_check(request,password,loggin,spesial_password):
                            {'form': RegistrationForm(), 'error_message': error_message})
 
 
+def validation(username):
+
+    validator = RegexValidator(r'^[a-zA-Zа-яА-ЯёЁ0-9_]+$', 'Invalid username!')
+    try:
+        validator(username)
+        return None
+    except ValidationError:
+        return 'Username contains forbidden characters!'
+    
+    
+# @ratelimit(key='ip', rate='8/m',block=True)
 def about(request):
     """Авторизация"""
     if request.method == 'POST':
+       
         username = request.POST.get('username')
         password = request.POST.get('password')
+        ip = request.META.get('REMOTE_ADDR')    
+
+
+        ip_fail_key = f'login_fails_ip_{ip}'
+        ip_lock_key = f'login_lock_ip_{ip}'
+
+        ip_lock = cache.get(ip_lock_key)
+
+        if ip_lock:
+            remaining = (ip_lock - timezone.now()).seconds
+            return render(request, 'main/about.html', {
+                'form': RegistrationForm(),
+                'error_message': f"Потворите попыптку через {remaining} секунд"
+            })
+
+        error_message = validation(username)
+        if error_message:
+            return render(request, 'main/about.html', {
+                'form': RegistrationForm(),
+                'error_message': error_message
+            })
 
         with connection.cursor() as cursor:
             # сначала ищем спец пользователей
@@ -60,8 +118,16 @@ def about(request):
 
             if user_data:
                 return password_check(request, password,user_data[1],user_data[0])
-
+            
             else:
+                ip_fails = cache.get(ip_fail_key, 0) + 1
+                cache.set(ip_fail_key, ip_fails, timeout=300)
+
+                if ip_fails > 5:
+                    cache.set(ip_lock_key, 
+                            timezone.now() + timezone.timedelta(minutes=2), 
+                            timeout=120)
+                    
                 error_message = 'Пользователь не найден'
                 return render(request, 'main/about.html', 
                            {'form': RegistrationForm(), 'error_message': error_message})
@@ -77,15 +143,38 @@ def registr(request):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
+        
+
         if password != confirm_password:
             error_message = 'Пароли не совпадают'
             return render(request, 'main/registr.html', 
                         {'error_message': error_message})
         
         try:
+            validate_password(password,username)
+        except ValidationError as ve:
+            error_message = 'Ошибка в пароле: ' + ', '.join(ve.messages)
+            return render(request,'main/registr.html',
+                        {'error_message':error_message})
+
+        try:
             salt = bcrypt.gensalt()
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
             hashed_password_str = hashed_password.decode('utf-8')
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT name FROM users WHERE name = %s",
+                    [username]
+                )
+                not_uniq = cursor.fetchone()
+
+                print(not_uniq)
+
+                if not_uniq:
+                    error_message = 'Логин занят'
+                    return render(request, 'main/registr.html', 
+                            {'error_message': error_message})
 
             with connection.cursor() as cursor:
                 cursor.execute(

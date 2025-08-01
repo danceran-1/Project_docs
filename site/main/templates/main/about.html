@@ -87,7 +87,7 @@
     <p>Введите логин и пароль</p>
 
     {% if error_message %}
-      <p class="error-message">{{ error_message }}</p>
+      <p class="error-message">{{ error_message|escape }}</p>
     {% endif %}
 
     <form method="post">

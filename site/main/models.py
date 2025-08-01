@@ -1,8 +1,12 @@
 from django.db import models
+from django.core.validators import RegexValidator
 
 class User(models.Model):
-    username = models.CharField(max_length=255, unique=True)
-    password = models.CharField(max_length=255,unique=True)
+    username = models.CharField(
+        max_length=100,
+        validators=[RegexValidator(r'^[a-zA-Z0-9_]+$', 'Only letters, numbers and _ are allowed!')]
+    )
+    password = models.CharField(max_length=128) 
 
 class CalculationResult(models.Model):
     A = models.IntegerField()

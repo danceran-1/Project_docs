@@ -11,11 +11,22 @@
             min-height: 100vh;
             width: 100vw;
             background: url("{% static 'main/BackroundRegistration.png' %}") no-repeat center center fixed;
-            background-size: cover;
+            background-repeat: repeat;
+            background-size: auto;
             display: flex;
             align-items: center;
             justify-content: center;
+            animation: moveBackground 30s linear infinite;
         }
+        @keyframes moveBackground {
+        from {
+            background-position: 0 0;
+        }
+        to {
+            background-position: 1000px 1000px; /* смещение по x и y */
+            }
+        }
+        
         .register-window {
             position: relative;
             width: 420px;
