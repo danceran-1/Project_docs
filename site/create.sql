@@ -43,3 +43,14 @@ VALUES
 
 CREATE INDEX idx_users_username ON users(name);
 CREATE INDEX idx_users_role  ON users(user_password);
+
+
+
+CREATE TABLE personal_data(
+    user_id INT REFERENCES users(id),
+    name VARCHAR(100) NOT NULL,
+    surname VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    dob DATE NOT NULL,
+    sity VARCHAR(100) NOT NULL
+)
