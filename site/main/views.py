@@ -8,6 +8,7 @@ from django.conf import settings
 from django.db import connection
 from django.core.cache import cache
 from django.utils import timezone
+from .models import UserAvatar
 import os
 import bcrypt 
 from django_ratelimit.decorators import ratelimit
@@ -112,7 +113,7 @@ def about(request):
         with connection.cursor() as cursor:
             # сначала ищем спец пользователей
             cursor.execute(
-                "SELECT loggin,password FROM loging_password WHERE loggin = %s",
+                "SELECT loggin,password,id FROM loging_password WHERE loggin = %s",
                 [username]
             )
             special = cursor.fetchone()
@@ -223,10 +224,20 @@ def parsing(username):
         dog_sep = username.split("@")[0]
         dot_sep = username.split(".")[0]
 
-    return dog_sep if len(dog_sep) < len(dot_sep) else dot_sep
+        return dog_sep if len(dog_sep) < len(dot_sep) else dot_sep
+    
+    else:
+         return username
  
 def success(request, username,user_id):
     
+    form_data = {
+            'first_name': '',
+            'last_name': '',
+            'middle_name': '',
+            'birth_date': '',
+            'city': ''
+        }
 
     if request.method == 'POST':
         last_name = request.POST.get('last_name', '').strip()
@@ -235,16 +246,74 @@ def success(request, username,user_id):
         birth_date = request.POST.get('birth_date', '').strip()
         city = request.POST.get('city', '').strip()
 
-        
+        avatar_file = request.FILES.get('avatar')
 
         with connection.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO personal_data (user_id, name,surname,last_name,dob,sity) VALUES (%s, %s,%s,%s,%s,%s)",
-                [user_id,last_name,first_name,middle_name,birth_date,city]
+                "SELECT * FROM personal_data WHERE user_id = %s",
+                [user_id]
             )
+            is_data = cursor.fetchone()
 
+        if is_data:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE personal_data SET name = %s, surname = %s, last_name = %s, dob = %s, sity = %s 
+                    WHERE user_id = %s""", [first_name, last_name, middle_name, birth_date, city, user_id])
+
+            
+        else:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO personal_data (user_id, name,surname,last_name,dob,sity) VALUES (%s, %s,%s,%s,%s,%s)",
+                    [user_id,last_name,first_name,middle_name,birth_date,city]
+                    )
+                
+        form_data = {
+            'first_name': first_name,
+            'last_name': last_name,
+            'middle_name': middle_name,
+            'birth_date': birth_date,
+            'city': city
+        }
+        if avatar_file:
+            avatar_obj, created = UserAvatar.objects.get_or_create(user_id=user_id)
+            avatar_obj.avatar = avatar_file
+            avatar_obj.save()   
+
+        avatar_url = ''
+        avatar = UserAvatar.objects.filter(user_id=user_id).first()
+        if avatar and avatar.avatar:
+            avatar_url = avatar.avatar.url
+
+    else:
         
-    return render(request, 'main/success.html', {'username': username, 'user_id': user_id})
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM personal_data WHERE user_id = %s", [user_id])
+            row = cursor.fetchone()
+            if row:
+                form_data = {
+                    'first_name': row[2],
+                    'last_name': row[1],
+                    'middle_name': row[3],
+                    'birth_date': row[4],
+                    'city': row[5]
+                }
+
+        avatar_url = ''
+        avatar = UserAvatar.objects.filter(user_id=user_id).first()
+        if avatar and avatar.avatar:
+            avatar_url = avatar.avatar.url
+
+    return render(request, 'main/success.html', {
+        'username': username,
+        'user_id': user_id,
+        'form_data': form_data,
+        'full_name': f"{form_data['last_name']} {form_data['first_name']} {form_data['middle_name']}",
+        'birth_date': form_data['birth_date'],
+        'city': form_data['city'],
+        'avatar_url': avatar_url
+    })
 
 
 

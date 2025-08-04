@@ -1,0 +1,312 @@
+/* Основные стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #1C5583;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Фоновые элементы */
+.background-elements {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.bg-element {
+    position: absolute;
+    opacity: 0.2;
+    filter: brightness(1.5);
+}
+
+.bg-file {
+    top: 25%;
+    left: 5%;
+    width: 120px;
+    height: auto;
+}
+
+.bg-bd {
+    top: 15%;
+    right: 8%;
+    width: 100px;
+    height: auto;
+}
+
+.bg-install {
+    bottom: 10%;
+    left: 8%;
+    width: 110px;
+    height: auto;
+}
+
+.bg-lock {
+    bottom: 10%;
+    right: 5%;
+    width: 130px;
+    height: auto;
+}
+
+/* Основной контейнер */
+.main-container {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 30px;
+    text-align: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Логотип и слоган */
+.header-section {
+    margin-bottom: 80px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.logo {
+    width: 70px;
+    height: 70px;
+    margin-right: 20px;
+}
+
+.brand-name {
+    color: white;
+    font-size: 42px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.tagline {
+    color: white;
+    font-size: 28px;
+    font-weight: 400;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+}
+
+/* Секция функций */
+.features-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    margin-bottom: 80px;
+    flex-wrap: wrap;
+}
+
+.feature {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 220px;
+}
+
+.feature-icon {
+    width: 110px;
+    height: 110px;
+    background: #7DBEEF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.feature-icon img {
+    width: 55px;
+    height: 55px;
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+}
+
+.feature-text {
+    color: white;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+    opacity: 0.9;
+}
+
+/* Кнопки действий */
+.action-buttons {
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn {
+    padding: 18px 35px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    min-width: 180px;
+    text-align: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #7BBBFF, #4875A6);
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #4875A6, #7BBBFF);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(123, 187, 255, 0.4);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .main-container {
+        padding: 50px 25px;
+    }
+    
+    .features-section {
+        gap: 30px;
+        margin-bottom: 60px;
+    }
+    
+    .feature {
+        max-width: 180px;
+    }
+    
+    .feature-icon {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .feature-icon img {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .feature-text {
+        font-size: 14px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn {
+        width: 220px;
+        padding: 15px 30px;
+        font-size: 16px;
+    }
+    
+    .brand-name {
+        font-size: 36px;
+    }
+    
+    .tagline {
+        font-size: 24px;
+    }
+    
+    .logo {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-container {
+        padding: 40px 20px;
+    }
+    
+    .header-section {
+        margin-bottom: 50px;
+    }
+    
+    .features-section {
+        gap: 25px;
+        margin-bottom: 50px;
+    }
+    
+    .feature {
+        max-width: 160px;
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 10px;
+    }
+    
+    .feature-icon img {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .feature-text {
+        font-size: 13px;
+    }
+    
+    .btn {
+        padding: 14px 28px;
+        font-size: 15px;
+        min-width: 160px;
+    }
+    
+    .brand-name {
+        font-size: 30px;
+    }
+    
+    .tagline {
+        font-size: 20px;
+    }
+    
+    .logo {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .bg-element {
+        opacity: 0.15;
+    }
+    
+    .bg-file, .bg-bd, .bg-install, .bg-lock {
+        width: 80px;
+    }
+} 

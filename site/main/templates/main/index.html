@@ -1,252 +1,61 @@
-{% extends 'main/layout.html' %}
-
 {% load static %}
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Seymour+One&display=swap" rel="stylesheet">
-    <link rel='stylesheet' href='styles.css'>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fillary - Сохраняй. Заполняй. Управляй</title>
+    <link rel="stylesheet" href="{% static 'main/css/start.css' %}">
 </head>
+<body>
+    <!-- Фоновые элементы -->
+    <div class="background-elements">
+        <img src="{% static 'main/img/File.png' %}" alt="File" class="bg-element bg-file">
+        <img src="{% static 'main/img/BD.png' %}" alt="BD" class="bg-element bg-bd">
+        <img src="{% static 'main/img/Install.png' %}" alt="Install" class="bg-element bg-install">
+        <img src="{% static 'main/img/Lock.png' %}" alt="Lock" class="bg-element bg-lock">
+    </div>
 
-{% block title %}Главная страница{% endblock %}
-
-{% block content %}
-
-  <style>
-    body {
-      font-family: "Open Sans", sans-serif;
-      background-image: url('https://regionsrf.ru/wp-content/uploads/2023/05/belgorod-1.jpg');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 0;
-    }
-
-
-
-
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 32px;
-      margin-bottom: 20px;
-    }
-
-    p {
-      font-size: 16px;
-      margin-bottom: 30px;
-    }
-
-    .error-message {
-      color: red;
-      font-weight: bold;
-      margin-bottom: 20px;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    label {
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-
-    button {
-      background-color: #ccc;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: rgb(195, 193, 214,0.4);
-    }
-    .nav-item {
-    background-color: rgb(195, 193, 214,0.4);
-    color: white;
-    text-decoration: none;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    display: block; /* Кнопки будут отображаться вертикально */
-    margin: 10px 0; /* Поля между кнопками */
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.nav-item:hover {
-    background-color: #666; /* Темно-серый фон при наведении */
-    color: #fff; /* Белый текст при наведении */
-    transform: scale(1.1);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-}
-.nav-item:active {
-  transition: all 0.4s ease;
-  transform: scale(1.4);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-}
-.line {
-    background-color: rgb(224,224,224,0.7);
-    height: 50px;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: fixed;
-    top: 55px; /* измените это значение на нужное */
-    left: 0;
-    z-index: 1000;
-    margin-left: 0; /* Remove the left margin */
-    margin-right: 100px;
-}
-.line a {
-    color: green;
-    text-decoration: none;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    display: block;
-    margin: 250px ; /* Increased margin to 20px */
-    text-align: center;
-}
-.line a:hover {
-    color: #fff;
-}
-.image {
-
-  width: 300px;
-  height: 200px;
-}
-
-.text-at-top {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-}
-.dropdown {
-  position: relative;
-  display: inline-block;
-  background-color: rgb(224,0,0,0.7);
-
-
-}
-
-.dropdown-btn {
-
-  color: green;
-  padding: 16px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-  position: relative;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-   background-color: #E0FFFF;
-  min-width: 80px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 2;
-  max-height: 700px;
-  overflow-y: auto;
-  animation: fadeIn 0.3s ease-in-out;
-
-}
-
-.dropdown-content a {
-  color: black;
-   padding: 10px 20px;
-  text-decoration: none;
-  display: block;
-   margin: 4px 0;
-}
-
-.dropdown-content a:hover {
-  background-color: #f1f1f1;
-}
-
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-.animate {
-  animation: fadeOut 0.5s forwards;
-}
-
-@keyframes fadeOut {
-  0% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(-10px);
-  50% {
-    opacity: 0.5;
-    transform: translateY(-15px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-  </style>
-    <body>
-
-    <div class="container-fluid">
-        <div class="text-center text-white">
-            <div class="d-flex flex-column justify-content-center">
-
-                 <a class="nav-item" href="{% url 'about' %}" class="btn btn-primary btn-lg">Перейти на страницу Регистрации</a>
-                 <a href="{% url 'registr' %}" class="nav-item btn btn-primary btn-lg">Поддержка</a>
-
+    <!-- Основной контент -->
+    <div class="main-container">
+        <!-- Логотип и слоган -->
+        <div class="header-section">
+            <div class="logo-container">
+                <img src="{% static 'main/img/Logo2.png' %}" alt="Fillary Logo" class="logo">
+                <h1 class="brand-name">Fillary</h1>
             </div>
-        </div>  
-    </div>
-    <div class="text-at-top">Белгородская область</div>
+            <p class="tagline">Сохраняй. Заполняй. Управляй</p>
+        </div>
 
-    <div class="line">
-        <a class="btn btn-primary btn-lg" href="{% url 'about' %}">Слово 1</a>
+        <!-- Функции -->
+        <div class="features-section">
+            <div class="feature">
+                <div class="feature-icon">
+                    <img src="{% static 'main/img/1.png' %}" alt="Store Forms">
+                </div>
+                <p class="feature-text">Храните формы и заполняйте одним кликом</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">
+                    <img src="{% static 'main/img/2.png' %}" alt="Secure">
+                </div>
+                <p class="feature-text">Безопасная авторизация и защита данных</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">
+                    <img src="{% static 'main/img/3.png' %}" alt="Access">
+                </div>
+                <p class="feature-text">Быстрый доступ с любого устройства</p>
+            </div>
+        </div>
 
-        <div class="dropdown">
-            <button class="dropdown-btn">Список</button>
-  <div class="dropdown-content">
-    <a href="#">Option 1</a>
-    <a href="#">Option 2</a>
-    <a href="#">Option 3</a>
-  </div>
-</div>
-        <a class="btn btn-primary btn-lg" href="#">Слово 3</a>
-        <a class="btn btn-primary btn-lg" href="#">Слово 4</a>
+        <!-- Кнопки действий -->
+        <div class="action-buttons">
+            <a href="{% url 'registr' %}" class="btn btn-primary">Зарегестрироваться</a>
+            <a href="{% url 'about' %}" class="btn btn-secondary">Войти</a>
+        </div>
     </div>
-    </div>>
 </body>
-{% endblock %}
+</html>

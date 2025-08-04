@@ -12,8 +12,8 @@ urlpatterns = [
     path('captcha/', include('captcha.urls')),
     path('success1/<str:username>/<int:user_id>/', views.success1, name='success1'),
     path('media/', views.media, name='media_view'),
+    
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-
-]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

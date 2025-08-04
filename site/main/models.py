@@ -8,6 +8,11 @@ class User(models.Model):
     )
     password = models.CharField(max_length=128) 
 
+class UserAvatar(models.Model):
+    user_id = models.IntegerField(unique=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+
+
 class CalculationResult(models.Model):
     A = models.IntegerField()
     B = models.IntegerField()

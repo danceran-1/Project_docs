@@ -29,6 +29,11 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
+            background-color: #f5f5f5;
+        }
+        input:read-only {
+            background-color: #eee;
+            color: #666;
         }
         .user-data {
             margin-top: 20px;
@@ -43,45 +48,126 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin-right: 10px;
         }
         button:hover {
             background-color: #45a049;
         }
+        .avatar-wrapper {
+        width: 150px;
+        height: 150px;
+        border: 3px solid #ccc;
+        border-radius: 10px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color 0.3s;
+       
+    }
+
+        .avatar-wrapper.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .avatar-wrapper:hover {
+            border-color: #888;
+            cursor: pointer;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+           
+        }
+        .avatar-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        
     </style>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function enableEditing() {
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => input.removeAttribute('readonly'));
+            document.getElementById('edit-btn').style.display = 'none';
+            document.getElementById('save-btn').style.display = 'inline-block';
+
+            const avatarLabel = document.getElementById('avatar-label');
+            avatarLabel.classList.remove('disabled');
+        }
+
+        document.getElementById('edit-btn').addEventListener('click', enableEditing);
+
+        const avatarInput = document.getElementById('avatar-input');
+        if (avatarInput) {
+            avatarInput.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        document.querySelector('.avatar-img').src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    });
+</script>
+
 </head>
 <body>
     <h1 class="center-text">Добро пожаловать, {{ username }}!</h1>
+
     <div class="form-container">
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            
+
+            <input type="file" name="avatar" id="avatar-input" accept="image/*" style="display: none;" onchange="document.getElementById('avatar-form').submit();">
+
+            <div class="avatar-container">
+                <label for="avatar-input" class="avatar-wrapper disabled" id="avatar-label">
+                    <img src="{{ avatar_url|default:'/media/default_avatar.jpg' }}" 
+                        alt="avatar"
+                        class="avatar-img">
+                </label>
+            </div>
+                            
             <div class="form-group">
                 <label>Фамилия:</label>
-                <input type="text" name="last_name" required>
+                <input type="text" name="last_name" value="{{ form_data.last_name }}" readonly required>
             </div>
             <div class="form-group">
                 <label>Имя:</label>
-                <input type="text" name="first_name" required>
+                <input type="text" name="first_name" value="{{ form_data.first_name }}" readonly required>
             </div>
             <div class="form-group">
                 <label>Отчество:</label>
-                <input type="text" name="middle_name">
+                <input type="text" name="middle_name" value="{{ form_data.middle_name }}" readonly>
             </div>
             <div class="form-group">
                 <label>Дата рождения:</label>
-                <input type="date" name="birth_date" required>
+                <input type="date" name="birth_date" value="{{ form_data.birth_date }}" readonly required>
             </div>
             <div class="form-group">
                 <label>Город проживания:</label>
-                <input type="text" name="city" required>
+                <input type="text" name="city" value="{{ form_data.city }}" readonly required>
             </div>
 
-            <button type="submit">Отправить</button>
+            <button type="button" id="edit-btn" onclick="enableEditing()">Редактировать</button>
+            <button type="submit" id="save-btn" style="display: none;">Сохранить</button>
         </form>
+        
+        
 
         {% if full_name %}
         <div class="user-data">
-            <h3>Данные пользователя:</h3>
+            <h3>Текущие данные пользователя:</h3>
             <p><strong>ФИО:</strong> {{ full_name }}</p>
             <p><strong>Дата рождения:</strong> {{ birth_date }}</p>
             <p><strong>Город:</strong> {{ city }}</p>
