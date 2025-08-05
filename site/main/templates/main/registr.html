@@ -156,30 +156,46 @@
         .register-btn:hover {
             background: #1976d2;
         }
+        .register-window.error-active {
+            height: 600px;
+            transition: height 0.3s;
+        }
+        .register-form.error-active {
+            margin-top: 30px;
+            transition: margin-top 0.3s;
+        }
+        .error-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .error-message {
+            color: red;
+            font-size: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
-    <div class="register-window">
+    <div class="register-window{% if error_message %} error-active{% endif %}">
         <img src="{% static 'main/RegistrationWindow.png' %}" alt="Окно регистрации" class="register-window-img">
         <img src="{% static 'main/LogoForReg.png' %}" alt="Логотип" class="register-logo-img">
         <div class="register-title gradient-title">Регистрация</div>
-        <form method="POST" action="{% url 'registr' %}" class="register-form">
+        <form method="POST" action="{% url 'registr' %}" class="register-form{% if error_message %} error-active{% endif %}">
             {% csrf_token %}
-        
             <input type="email" name="username" id="username" class="register-input" placeholder="Электронная почта" required>
-            
             <div class="password-field">
                 <input type="password" name="password" id="password" class="register-input" placeholder="Пароль" required>
                 <img src="{% static 'main/UnvisiblePass.png' %}" alt="Показать пароль" class="toggle-pass" id="togglePass">
                 <div class="input-underline"></div>
             </div>
-            
             <input type="password" name="confirm_password" id="confirm_password" class="register-input" placeholder="Подтвердите пароль" required>
-            
             {% if error_message %}
-                <div style="color: red; text-align: center; margin-top: 10px;">{{ error_message }}</div>
+                <div class="error-container">
+                    <div class="error-message">{{ error_message }}</div>
+                </div>
             {% endif %}
-            
             <button type="submit" class="register-btn">Зарегистрироваться</button>
         </form>
     </div>

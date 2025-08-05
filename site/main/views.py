@@ -292,11 +292,13 @@ def success(request, username,user_id):
             cursor.execute("SELECT * FROM personal_data WHERE user_id = %s", [user_id])
             row = cursor.fetchone()
             if row:
+                birth_date = row[4].strftime('%Y-%m-%d') if row[4] else ''
+
                 form_data = {
                     'first_name': row[2],
                     'last_name': row[1],
                     'middle_name': row[3],
-                    'birth_date': row[4],
+                    'birth_date': birth_date,
                     'city': row[5]
                 }
 

@@ -69,10 +69,11 @@ body {
 
 /* Заголовок с градиентом */
 .login-title {
-    background: linear-gradient(135deg, #0060B9, #002B53);
+    background: linear-gradient(90deg, #0060B9 40%, #002B53 60%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    color: transparent;
     font-size: 28px;
     font-weight: 600;
     margin: 0 0 20px 0;
@@ -125,17 +126,17 @@ body {
     width: 100%;
     padding: 12px 0;
     border: none;
-    border-bottom: 1px solid #bdc3c7;
+    border-bottom: 2px solid #1976d2;
     background: transparent;
     font-size: 18px;
-    color: #2c3e50;
+    color: #222;
     outline: none;
     transition: border-color 0.3s ease;
     box-sizing: border-box;
 }
 
 .input-field:focus {
-    border-bottom-color: #46708C;
+    border-bottom-color: #1565c0;
 }
 
 /* Стили для placeholder */
@@ -196,8 +197,8 @@ body {
 /* Кнопка входа */
 .login-button {
     width: 100%;
-    background: linear-gradient(135deg, #46708C, #5a8ba8);
-    color: white;
+    background: #42a5f5;
+    color: #fff;
     border: none;
     border-radius: 30px;
     padding: 15px;
@@ -207,13 +208,13 @@ body {
     transition: all 0.3s ease;
     margin-top: auto;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 15px rgba(70, 112, 140, 0.3);
+    box-shadow: 0 2px 8px rgba(66,165,245,0.10);
 }
 
 .login-button:hover {
-    background: linear-gradient(135deg, #5a8ba8, #46708C);
+    background: #1976d2;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(70, 112, 140, 0.4);
+    box-shadow: 0 6px 20px rgba(66,165,245,0.15);
 }
 
 .login-button:active {
@@ -312,3 +313,4 @@ body {
 }
 
 
+    
