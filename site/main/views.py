@@ -9,11 +9,13 @@ from django.db import connection
 from django.core.cache import cache
 from django.utils import timezone
 from .models import UserAvatar
-import os
-import bcrypt 
+import os, bcrypt 
 from django_ratelimit.decorators import ratelimit
 from django.core.validators import RegexValidator
 from django.contrib.auth.password_validation import validate_password
+from django.contrib import messages
+from django.http import JsonResponse
+from .models import City
 
 
 def index(request):
@@ -229,6 +231,19 @@ def parsing(username):
     else:
          return username
  
+def city_autocomplete(request):
+
+    q = request.GET.get('q','')
+    print("dsdsadsadas")
+    if q:
+        cities = City.objects.filter(name__icontains=q).order_by('name')[:10]
+        results = list(cities.values_list('name', flat=True))
+    else:
+        results = []
+    return JsonResponse(results, safe=False)
+
+
+
 def success(request, username,user_id):
     
     form_data = {
@@ -285,6 +300,8 @@ def success(request, username,user_id):
         avatar = UserAvatar.objects.filter(user_id=user_id).first()
         if avatar and avatar.avatar:
             avatar_url = avatar.avatar.url
+
+        messages.success(request, 'Профиль успешно обновлён!')
 
     else:
         

@@ -15,6 +15,7 @@
         }
         .form-group {
             margin-bottom: 15px;
+            position: relative; /* Для подсказок автодополнения */
         }
         label {
             display: block;
@@ -54,17 +55,16 @@
             background-color: #45a049;
         }
         .avatar-wrapper {
-        width: 150px;
-        height: 150px;
-        border: 3px solid #ccc;
-        border-radius: 10px;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: border-color 0.3s;
-       
-    }
+            width: 150px;
+            height: 150px;
+            border: 3px solid #ccc;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.3s;
+        }
 
         .avatar-wrapper.disabled {
             pointer-events: none;
@@ -80,7 +80,6 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-           
         }
         .avatar-container {
             display: flex;
@@ -88,11 +87,72 @@
             margin-bottom: 20px;
         }
 
-        
+        /* Стили для автодополнения */
+        #city-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            background-color: white;
+            z-index: 1000;
+            font-size: 14px;
+            border-radius: 0 0 4px 4px;
+        }
+        #city-suggestions div {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #city-suggestions div:hover {
+            background-color: #eee;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        function enableEditing() {
+        // --- Автодополнение для города ---
+        const input = document.getElementById('city-input');
+        const suggestionsBox = document.createElement('div');
+        suggestionsBox.id = 'city-suggestions';
+        input.parentNode.appendChild(suggestionsBox);
+
+        let timer = null;
+
+        input.addEventListener('input', function () {
+            clearTimeout(timer);
+            const query = this.value.trim();
+            suggestionsBox.innerHTML = '';
+
+            if (query.length < 2) return;
+
+            timer = setTimeout(() => {
+                fetch(`/city-autocomplete/?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        suggestionsBox.innerHTML = '';
+                        data.forEach(city => {
+                            const div = document.createElement('div');
+                            div.textContent = city;
+                            div.addEventListener('click', () => {
+                                input.value = city;
+                                suggestionsBox.innerHTML = '';
+                            });
+                            suggestionsBox.appendChild(div);
+                        });
+                    });
+            }, 300);
+        });
+
+        document.addEventListener('click', function (e) {
+            if (e.target !== input) {
+                suggestionsBox.innerHTML = '';
+            }
+        });
+
+        // --- Функция для включения редактирования ---
+        window.enableEditing = function () {
             const inputs = document.querySelectorAll('input');
             inputs.forEach(input => input.removeAttribute('readonly'));
             document.getElementById('edit-btn').style.display = 'none';
@@ -100,10 +160,9 @@
 
             const avatarLabel = document.getElementById('avatar-label');
             avatarLabel.classList.remove('disabled');
-        }
+        };
 
-        document.getElementById('edit-btn').addEventListener('click', enableEditing);
-
+        // --- Загрузка аватара ---
         const avatarInput = document.getElementById('avatar-input');
         if (avatarInput) {
             avatarInput.addEventListener('change', function (event) {
@@ -117,22 +176,36 @@
                 }
             });
         }
-    });
-</script>
 
+        // --- Сообщения SweetAlert ---
+        {% if messages %}
+            {% for message in messages %}
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: '{{ message.tags }}',
+                    title: '{{ message|escapejs }}',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            {% endfor %}
+        {% endif %}
+    });
+    </script>
 </head>
 <body>
     <h1 class="center-text">Добро пожаловать, {{ username }}!</h1>
 
     <div class="form-container">
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" id="avatar-form">
             {% csrf_token %}
 
             <input type="file" name="avatar" id="avatar-input" accept="image/*" style="display: none;" onchange="document.getElementById('avatar-form').submit();">
 
             <div class="avatar-container">
                 <label for="avatar-input" class="avatar-wrapper disabled" id="avatar-label">
-                    <img src="{{ avatar_url|default:'/media/default_avatar.jpg' }}" 
+                    <img src="{{ avatar_url|default:'/media/default_avatar1.jpg' }}" 
                         alt="avatar"
                         class="avatar-img">
                 </label>
@@ -154,16 +227,15 @@
                 <label>Дата рождения:</label>
                 <input type="date" name="birth_date" value="{{ form_data.birth_date }}" readonly required>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="position: relative;">
                 <label>Город проживания:</label>
-                <input type="text" name="city" value="{{ form_data.city }}" readonly required>
+                <input type="text" id="city-input" name="city" value="{{ form_data.city }}" readonly required autocomplete="off">
+                <div id="city-suggestions" style="border: 1px solid #ccc; background: white; position: absolute; z-index: 1000;"></div>
             </div>
 
             <button type="button" id="edit-btn" onclick="enableEditing()">Редактировать</button>
             <button type="submit" id="save-btn" style="display: none;">Сохранить</button>
         </form>
-        
-        
 
         {% if full_name %}
         <div class="user-data">

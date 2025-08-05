@@ -12,6 +12,7 @@ urlpatterns = [
     path('captcha/', include('captcha.urls')),
     path('success1/<str:username>/<int:user_id>/', views.success1, name='success1'),
     path('media/', views.media, name='media_view'),
+    path('city-autocomplete/', views.city_autocomplete, name='city_autocomplete')
     
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
