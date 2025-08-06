@@ -16,7 +16,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib import messages
 from django.http import JsonResponse
 from .models import City
-
+from docxtpl import DocxTemplate
 
 def index(request):
     return render(request, 'main/index.html')
@@ -243,6 +243,32 @@ def city_autocomplete(request):
     return JsonResponse(results, safe=False)
 
 
+def generate_doc(user_id):
+    
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT * FROM personal_data WHERE user_id = %s",
+            [user_id])
+        
+        is_data = cursor.fetchone()
+
+        if not is_data:
+            messages.error(is_data, "Нет данных для генерации документа.")
+
+        else:
+            name, surname, last_name, dob, city = is_data
+
+            context = {
+                'ФИО': f'{name} {surname} {last_name}',
+                'Город проживания': city,
+                'Дата рождения': dob.strftime('%d.%m.%Y')
+            }
+
+    doc = DocxTemplate("templates/documents/example.docx")
+    doc.render(context)
+    doc.save("templates/out_doc/spravka_ivanov.docx")
+
+
 
 def success(request, username,user_id):
     
@@ -254,35 +280,44 @@ def success(request, username,user_id):
             'city': ''
         }
 
+    avatar_file = request.FILES.get('avatar')
+
     if request.method == 'POST':
-        last_name = request.POST.get('last_name', '').strip()
-        first_name = request.POST.get('first_name', '').strip()
-        middle_name = request.POST.get('middle_name', '').strip()
-        birth_date = request.POST.get('birth_date', '').strip()
-        city = request.POST.get('city', '').strip()
 
-        avatar_file = request.FILES.get('avatar')
+        if 'generate_doc_btn' in request.POST:
 
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT * FROM personal_data WHERE user_id = %s",
-                [user_id]
-            )
-            is_data = cursor.fetchone()
+            generate_doc(user_id)
 
-        if is_data:
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    UPDATE personal_data SET name = %s, surname = %s, last_name = %s, dob = %s, sity = %s 
-                    WHERE user_id = %s""", [first_name, last_name, middle_name, birth_date, city, user_id])
+        elif "save-btn" in request.POST:
+
+            last_name = request.POST.get('last_name', '').strip()
+            first_name = request.POST.get('first_name', '').strip()
+            middle_name = request.POST.get('middle_name', '').strip()
+            birth_date = request.POST.get('birth_date', '').strip()
+            city = request.POST.get('city', '').strip()
 
             
-        else:
+
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO personal_data (user_id, name,surname,last_name,dob,sity) VALUES (%s, %s,%s,%s,%s,%s)",
-                    [user_id,last_name,first_name,middle_name,birth_date,city]
-                    )
+                    "SELECT * FROM personal_data WHERE user_id = %s",
+                    [user_id]
+                )
+                is_data = cursor.fetchone()
+
+            if is_data:
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        UPDATE personal_data SET name = %s, surname = %s, last_name = %s, dob = %s, sity = %s 
+                        WHERE user_id = %s""", [first_name, last_name, middle_name, birth_date, city, user_id])
+
+                
+            else:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "INSERT INTO personal_data (user_id, name,surname,last_name,dob,sity) VALUES (%s, %s,%s,%s,%s,%s)",
+                        [user_id,last_name,first_name,middle_name,birth_date,city]
+                        )
                 
         form_data = {
             'first_name': first_name,
@@ -302,6 +337,8 @@ def success(request, username,user_id):
             avatar_url = avatar.avatar.url
 
         messages.success(request, 'Профиль успешно обновлён!')
+
+        
 
     else:
         

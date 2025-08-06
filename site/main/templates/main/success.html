@@ -108,7 +108,105 @@
         #city-suggestions div:hover {
             background-color: #eee;
         }
+
+        /* ===== Темная и светлая темы ===== */
+
+        body.light {
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        body.dark {
+            background-color: #121212;
+            color: #f0f0f0;
+        }
+
+        body.dark .form-container {
+            background-color: #1e1e1e;
+            border-color: #444;
+        }
+
+        body.dark input[type="text"],
+        body.dark input[type="date"],
+        body.dark input[type="number"] {
+            background-color: #2c2c2c;
+            border-color: #555;
+            color: #f0f0f0;
+        }
+
+        body.dark input:read-only {
+            background-color: #2c2c2c;
+            color: #888;
+        }
+
+        body.dark button {
+            background-color: #555;
+        }
+
+        body.dark button:hover {
+            background-color: #666;
+        }
+        
+        body {
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+
+        body.dark .avatar-wrapper {
+            border-color: #555;
+        }
+
+        body.dark .avatar-wrapper:hover {
+            border-color: #888;
+        }
+
+        body.dark #city-suggestions {
+            background-color: #2c2c2c;
+            border-color: #555;
+            color: #f0f0f0;
+        }
+
+        body.dark #city-suggestions div:hover {
+            background-color: #444;
+        }
+        .theme-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+        }
+
+        .theme-toggle button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 8px;
+            transition: transform 0.2s;
+        }
+
+        .theme-toggle button:hover {
+            transform: scale(1.2);
+        }
+
+
     </style>
+    <script>
+    function toggleTheme() {
+        const body = document.body;
+        const current = body.classList.contains('dark') ? 'dark' : 'light';
+        const newTheme = current === 'dark' ? 'light' : 'dark';
+        body.classList.remove(current);
+        body.classList.add(newTheme);
+        localStorage.setItem('theme', newTheme);
+    }
+
+    // Применить сохранённую тему при загрузке
+    window.addEventListener('DOMContentLoaded', () => {
+        const saved = localStorage.getItem('theme') || 'light';
+        document.body.classList.add(saved);
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -192,9 +290,34 @@
             {% endfor %}
         {% endif %}
     });
+    function toggleTheme() {
+    const body = document.body;
+    const currentTheme = body.classList.contains('dark') ? 'dark' : 'light';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    body.classList.remove(currentTheme);
+    body.classList.add(newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    updateThemeIcon(newTheme);
+    }
+
+    function updateThemeIcon(theme) {
+        const btn = document.getElementById('theme-btn');
+        btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+
+    // Применить сохранённую тему при загрузке
+    window.addEventListener('DOMContentLoaded', () => {
+        const saved = localStorage.getItem('theme') || 'light';
+        document.body.classList.add(saved);
+        updateThemeIcon(saved);
+    });
+
     </script>
 </head>
 <body>
+    <body id="theme-style">
     <h1 class="center-text">Добро пожаловать, {{ username }}!</h1>
 
     <div class="form-container">
@@ -235,16 +358,17 @@
 
             <button type="button" id="edit-btn" onclick="enableEditing()">Редактировать</button>
             <button type="submit" id="save-btn" style="display: none;">Сохранить</button>
-        </form>
 
-        {% if full_name %}
-        <div class="user-data">
-            <h3>Текущие данные пользователя:</h3>
-            <p><strong>ФИО:</strong> {{ full_name }}</p>
-            <p><strong>Дата рождения:</strong> {{ birth_date }}</p>
-            <p><strong>Город:</strong> {{ city }}</p>
+            
+        </form>
+        
+        <div class="theme-toggle">
+            <button id="theme-btn" onclick="toggleTheme()" title="Переключить тему">🌙</button>
         </div>
-        {% endif %}
+        
+        <button type="submit" name="generate_doc_btn" class="doc-button">📄 Сформировать документ</button>
+
+        
     </div>
 </body>
 </html>
