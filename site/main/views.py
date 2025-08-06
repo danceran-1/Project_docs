@@ -247,7 +247,7 @@ def city_autocomplete(request):
         results = []
     return JsonResponse(results, safe=False)
 
-def download_doc(user_id,request,context,path):
+def download_doc(context,path):
 
     doc = DocxTemplate(path)
     doc.render(context)
@@ -264,36 +264,46 @@ def download_doc(user_id,request,context,path):
     return response
 
 
-def generate_doc(user_id,request):
-    
+def generate_doc(user_id, request):
 
-    path = "main/templates/documents/example.docx"
+    template_file = request.POST.get('template')
+
+
+    path = f"main/templates/documents/{template_file}"
 
     with connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT * FROM personal_data WHERE user_id = %s",
-            [user_id])
-        
+        cursor.execute("SELECT * FROM personal_data WHERE user_id = %s", [user_id])
         is_data = cursor.fetchone()
 
         if not is_data:
-            messages.success(request, "Нет данных для генерации документа.")
+            messages.error(request, "Нет данных для генерации документа.")
+            return redirect('success', username=request.user.username, user_id=user_id)
 
-        else:
-            name = is_data[1]
-            surname = is_data[2] 
-            last_name = is_data[3] 
-            dob = is_data[4] 
-            city = is_data[5] 
-           
+        name = is_data[1]
+        surname = is_data[2]
+        last_name = is_data[3]
+        dob = is_data[4]
+        city = is_data[5]
 
-            context = {
-                'ФИО': f'{name} {surname} {last_name}',
-                'Город_проживания': city,
-                'Дата_рождения': dob.strftime('%d.%m.%Y')
-            }
-            messages.success(request, "Документ успешно создан.")
-            return download_doc(user_id,request,context,path)
+        context = {
+            'ФИО': f'{name} {surname} {last_name}',
+            'Город_проживания': city,
+            'Дата_рождения': dob.strftime('%d.%m.%Y')
+        }
+
+        doc = DocxTemplate(path)
+        file_stream = BytesIO()
+        doc.render(context)
+        doc.save(file_stream)
+        file_stream.seek(0)
+
+        response = HttpResponse(
+            file_stream.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+        response['Content-Disposition'] = f'attachment; filename="generated_doc.docx"'
+        return response
+
 
 
 def success(request, username,user_id):
