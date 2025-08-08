@@ -285,10 +285,16 @@ def generate_doc(user_id, request):
         dob = is_data[4]
         city = is_data[5]
 
+        current_time = timezone.now()
+        current_date = current_time.date().strftime('%d.%m.%Y')
+
+        print(current_date)
+
         context = {
             'ФИО': f'{name} {surname} {last_name}',
             'Город_проживания': city,
-            'Дата_рождения': dob.strftime('%d.%m.%Y')
+            'Дата_рождения': dob.strftime('%d.%m.%Y'),
+            'дата_выдачи': current_date
         }
 
         doc = DocxTemplate(path)
@@ -304,6 +310,49 @@ def generate_doc(user_id, request):
         response['Content-Disposition'] = f'attachment; filename="generated_doc.docx"'
         return response
 
+def get_client_ip(request):
+   
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+def write_accept(user_id,request):
+
+
+    ip_address = get_client_ip(request)
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+        "SELECT * FROM personal_data_agreement WHERE user_id = %s",
+        [user_id]
+        )
+
+        is_data = cursor.fetchone()
+
+    if not is_data:
+        with connection.cursor() as cursor:
+            cursor.execute(
+            "INSERT INTO personal_data_agreement (user_id,agreed_at,ip_address, user_agent) VALUES (%s,NOW(),%s,%s) ",
+            [user_id,ip_address,user_agent]
+            )
+
+def check_accept(user_id):
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+        "SELECT * FROM personal_data_agreement WHERE user_id = %s",
+        [user_id]
+        )
+        is_data = cursor.fetchone()
+
+    if is_data:
+        return True
+    return False
+    
 
 
 def success(request, username,user_id):
@@ -315,17 +364,28 @@ def success(request, username,user_id):
             'birth_date': '',
             'city': ''
         }
+    
+    accept_given = check_accept(user_id)
+
+    print(accept_given,"ВЫВЫВ")
 
     avatar_file = request.FILES.get('avatar')
 
     if request.method == 'POST':
 
+        # Запись согласия
+        if 'accept-consent' in request.POST:
+
+            write_accept(user_id, request)
+            messages.success(request, 'Согласие сохранено')
+            return redirect('success', username=username, user_id=user_id) 
+
+        # создание доков
         if 'generate_doc_btn' in request.POST:
 
             return generate_doc(user_id, request)
 
-        
-
+    
         last_name = request.POST.get('last_name', '').strip()
         first_name = request.POST.get('first_name', '').strip()
         middle_name = request.POST.get('middle_name', '').strip()
@@ -347,7 +407,7 @@ def success(request, username,user_id):
                         UPDATE personal_data SET name = %s, surname = %s, last_name = %s, dob = %s, sity = %s 
                         WHERE user_id = %s""", [first_name, last_name, middle_name, birth_date, city, user_id])
 
-                
+        # сохранение данных      
         else:
                 with connection.cursor() as cursor:
                     cursor.execute(
@@ -375,7 +435,7 @@ def success(request, username,user_id):
         messages.success(request, 'Профиль успешно обновлён!')
 
         
-
+    # GET запрос
     else:
         
         with connection.cursor() as cursor:
@@ -404,7 +464,8 @@ def success(request, username,user_id):
         'full_name': f"{form_data['last_name']} {form_data['first_name']} {form_data['middle_name']}",
         'birth_date': form_data['birth_date'],
         'city': form_data['city'],
-        'avatar_url': avatar_url
+        'avatar_url': avatar_url,
+        'show_consent_modal': not accept_given
     })
 
 

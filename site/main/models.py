@@ -20,6 +20,16 @@ class City(models.Model):
         return self.name
 
 
+class PersonalDataAgreement(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    agreed_at = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Agreement from {self.user.username} at {self.agreed_at}"
+
+
 class CalculationResult(models.Model):
     A = models.IntegerField()
     B = models.IntegerField()

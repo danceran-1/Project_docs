@@ -47,10 +47,30 @@ CREATE INDEX idx_users_role  ON users(user_password);
 
 
 CREATE TABLE personal_data(
-    user_id INT REFERENCES users(id),
+    user_id INT PRIMARY KEY REFERENCES users(id),
     name VARCHAR(100) NOT NULL,
     surname VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     dob DATE NOT NULL,
-    sity VARCHAR(100) NOT NULL
-)
+    sity VARCHAR(100) NOT NULL,
+    agreement BOOLEAN
+);
+
+CREATE TABLE private_data(
+    user_id INT PRIMARY KEY REFERENCES users(id),
+    series INT NOT NULL,
+    number INT NOT NULL,
+    issued VARCHAR(100),
+    date_of_issue DATE,
+    code VARCHAR(50),
+    gender CHAR(3) CHECK (gender IN('МУЖ','ЖЕН')),
+    UNIQUE (series, number)
+);
+
+CREATE TABLE personal_data_agreement (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id),
+    agreed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ip_address INET,
+    user_agent TEXT
+);
