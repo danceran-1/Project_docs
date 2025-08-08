@@ -264,6 +264,8 @@ def download_doc(context,path):
     return response
 
 
+
+
 def generate_doc(user_id, request):
 
     template_file = request.POST.get('template')
@@ -308,7 +310,11 @@ def generate_doc(user_id, request):
             content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
         response['Content-Disposition'] = f'attachment; filename="generated_doc.docx"'
+
+        
         return response
+    
+
 
 def get_client_ip(request):
    
@@ -365,9 +371,12 @@ def success(request, username,user_id):
             'city': ''
         }
     
+    folder_path = os.path.join('main', 'templates', 'documents')
+    files = os.listdir(folder_path)
+    templates = [f for f in files if f.endswith('.docx')]
+    
     accept_given = check_accept(user_id)
-
-    print(accept_given,"ВЫВЫВ")
+    print(accept_given,"Accept")
 
     avatar_file = request.FILES.get('avatar')
 
@@ -465,7 +474,8 @@ def success(request, username,user_id):
         'birth_date': form_data['birth_date'],
         'city': form_data['city'],
         'avatar_url': avatar_url,
-        'show_consent_modal': not accept_given
+        'show_consent_modal': not accept_given,
+        'templates': templates
     })
 
 

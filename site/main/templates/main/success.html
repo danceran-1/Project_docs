@@ -385,14 +385,14 @@
                     <form method="post">
                         {% csrf_token %}
                         <input type="hidden" name="generate_doc_btn" value="1">
-                        <label style="display: block; margin: 10px 0;">
-                            <input type="radio" name="template" value="example.docx" required>
-                            Шаблон 1 – Справка по месту учебы
-                        </label>
-                        <label style="display: block; margin: 10px 0;">
-                            <input type="radio" name="template" value="example2.docx">
-                            Шаблон 2 – Справка с места жительства
-                        </label>
+                        
+                        {% for template in templates %}
+                            <label style="display: block; margin: 10px 0;">
+                                <input type="radio" name="template" value="{{ template }}" {% if forloop.first %}required{% endif %}>
+                                Шаблон {{ forloop.counter }} — {{ template|cut:".docx" }}
+                            </label>
+                        {% endfor %}
+
                         <button type="submit" class="doc-button" style="margin-top: 20px;">Скачать документ</button>
                     </form>
                 </div>
