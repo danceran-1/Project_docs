@@ -2,14 +2,13 @@ from django.shortcuts import render, redirect
 
 from django.core.exceptions import ValidationError
 from .forms import RegistrationForm, LoginForm
-from .models import User
 from .forms import CriterionForm
 from django.conf import settings
 from django.db import connection
 from django.core.cache import cache
 from django.utils import timezone
 from .models import UserAvatar
-import os, bcrypt 
+import os, bcrypt,re
 from django_ratelimit.decorators import ratelimit
 from django.core.validators import RegexValidator
 from django.contrib.auth.password_validation import validate_password
@@ -22,6 +21,9 @@ from django.http import HttpResponse
 from docxtpl import DocxTemplate
 from io import BytesIO
 from django.db import connection
+
+from docx import Document
+
 
 def index(request):
     return render(request, 'main/index.html')
@@ -247,31 +249,9 @@ def city_autocomplete(request):
         results = []
     return JsonResponse(results, safe=False)
 
-def download_doc(context,path):
 
-    doc = DocxTemplate(path)
-    doc.render(context)
+def check_personal_data(user_id,request):
 
-    file_stream = BytesIO()
-    doc.save(file_stream)
-    file_stream.seek(0)
-
-    response = HttpResponse(
-        file_stream.getvalue(),
-        content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    )
-    response['Content-Disposition'] = 'attachment; filename="spravka.docx"'
-    return response
-
-
-
-
-def generate_doc(user_id, request):
-
-    template_file = request.POST.get('template')
-
-
-    path = f"main/templates/documents/{template_file}"
 
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM personal_data WHERE user_id = %s", [user_id])
@@ -280,39 +260,80 @@ def generate_doc(user_id, request):
         if not is_data:
             messages.error(request, "Нет данных для генерации документа.")
             return redirect('success', username=request.user.username, user_id=user_id)
+        
+    name = is_data[1]
+    surname = is_data[2]
+    last_name = is_data[3]
+    dob = is_data[4]
+    city = is_data[5]
+    current_time = timezone.now()
+    current_date = current_time.date().strftime('%d.%m.%Y')
 
-        name = is_data[1]
-        surname = is_data[2]
-        last_name = is_data[3]
-        dob = is_data[4]
-        city = is_data[5]
+    if dob:
+        dob_str = dob.strftime('%d.%m.%Y')
+    else:
+        dob_str = ''
 
-        current_time = timezone.now()
-        current_date = current_time.date().strftime('%d.%m.%Y')
-
-        print(current_date)
-
-        context = {
-            'ФИО': f'{name} {surname} {last_name}',
-            'Город_проживания': city,
-            'Дата_рождения': dob.strftime('%d.%m.%Y'),
-            'дата_выдачи': current_date
+    context = {
+        'ФИО': f'{name} {surname} {last_name}',
+        'Город_проживания': city,
+        'Дата_рождения': dob_str,
+        'дата_выдачи': current_date
         }
 
-        doc = DocxTemplate(path)
-        file_stream = BytesIO()
-        doc.render(context)
-        doc.save(file_stream)
-        file_stream.seek(0)
+    return context
 
-        response = HttpResponse(
+def lack_data(user_id,request):
+    
+    context = check_personal_data(user_id,request)
+
+    template_file = request.POST.get('template')
+    path = f"main/templates/documents/{template_file}"
+        
+    doc = Document(path)
+    text = "\n".join([p.text for p in doc.paragraphs])
+    fields = re.findall(r'\{\{\s*([^}]+)\s*\}\}', text)
+
+    not_match = []
+    keys = [i for i in context.keys()]
+
+    for i in fields:
+        if i not in keys:
+            not_match.append(i)
+
+    return not_match
+
+
+def generate_doc(user_id, request):
+
+    template_file = request.POST.get('template')
+    path = f"main/templates/documents/{template_file}"
+
+    context = check_personal_data(user_id,request)
+
+    doc = Document(path)
+    text = "\n".join([p.text for p in doc.paragraphs])
+    fields = re.findall(r'\{\{\s*([^}]+)\s*\}\}', text)
+    not_match = []
+
+    keys = [i for i in context.keys()]
+    for i in fields:
+        if i not in keys:
+            not_match.append(i)
+
+    doc = DocxTemplate(path)
+    file_stream = BytesIO()
+    doc.render(context)
+    doc.save(file_stream)
+    file_stream.seek(0)
+
+    response = HttpResponse(
             file_stream.getvalue(),
             content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
-        response['Content-Disposition'] = f'attachment; filename="generated_doc.docx"'
+    response['Content-Disposition'] = f'attachment; filename="generated_doc.docx"'
 
-        
-        return response
+    return response
     
 
 
@@ -371,6 +392,8 @@ def success(request, username,user_id):
             'city': ''
         }
     
+    add = []
+    
     folder_path = os.path.join('main', 'templates', 'documents')
     files = os.listdir(folder_path)
     templates = [f for f in files if f.endswith('.docx')]
@@ -381,6 +404,8 @@ def success(request, username,user_id):
     avatar_file = request.FILES.get('avatar')
 
     if request.method == 'POST':
+        print(request.POST)
+
 
         # Запись согласия
         if 'accept-consent' in request.POST:
@@ -391,9 +416,22 @@ def success(request, username,user_id):
 
         # создание доков
         if 'generate_doc_btn' in request.POST:
-
+            
+            # проверка на заполненность доков
+            if 'download_doc' in request.POST:
+                print("ЕЕЕБОЙ")
+                add = lack_data(user_id,request)
+                print(add,"Не хвататет")
+                if add:
+                    
+                    messages.info(request, f"Не хвтает {add} для создания документа.")
+                    return redirect('success', username=username, user_id=user_id)
+                
+            
             return generate_doc(user_id, request)
 
+
+        
     
         last_name = request.POST.get('last_name', '').strip()
         first_name = request.POST.get('first_name', '').strip()
@@ -401,14 +439,14 @@ def success(request, username,user_id):
         birth_date = request.POST.get('birth_date', '').strip()
         city = request.POST.get('city', '').strip()
 
-            
+                
 
         with connection.cursor() as cursor:
-                cursor.execute(
-                    "SELECT * FROM personal_data WHERE user_id = %s",
-                    [user_id]
+            cursor.execute(
+                "SELECT * FROM personal_data WHERE user_id = %s",
+                [user_id]
                 )
-                is_data = cursor.fetchone()
+            is_data = cursor.fetchone()
 
         if is_data:
                 with connection.cursor() as cursor:
@@ -418,11 +456,11 @@ def success(request, username,user_id):
 
         # сохранение данных      
         else:
-                with connection.cursor() as cursor:
-                    cursor.execute(
-                        "INSERT INTO personal_data (user_id, name,surname,last_name,dob,sity) VALUES (%s, %s,%s,%s,%s,%s)",
-                        [user_id,last_name,first_name,middle_name,birth_date,city]
-                        )
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO personal_data (user_id, name,surname,last_name,dob,sity) VALUES (%s, %s,%s,%s,%s,%s)",
+                    [user_id,last_name,first_name,middle_name,birth_date,city]
+                    )
                 
         form_data = {
             'first_name': first_name,
@@ -475,7 +513,8 @@ def success(request, username,user_id):
         'city': form_data['city'],
         'avatar_url': avatar_url,
         'show_consent_modal': not accept_given,
-        'templates': templates
+        'templates': templates,
+        'lack_data':add
     })
 
 

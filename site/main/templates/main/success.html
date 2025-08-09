@@ -389,11 +389,11 @@
                         {% for template in templates %}
                             <label style="display: block; margin: 10px 0;">
                                 <input type="radio" name="template" value="{{ template }}" {% if forloop.first %}required{% endif %}>
-                                Шаблон {{ forloop.counter }} — {{ template|cut:".docx" }}
+                                Шаблон {{ forloop.counter }} — {{ template|cut:".docx" }} {{lack_data}}
                             </label>
                         {% endfor %}
 
-                        <button type="submit" class="doc-button" style="margin-top: 20px;">Скачать документ</button>
+                        <button type="submit" class="doc-button" name="download_doc" style="margin-top: 20px;">Скачать документ</button>
                     </form>
                 </div>
             </div>
