@@ -18,6 +18,15 @@ class City(models.Model):
 
     def __str__(self):
         return self.name
+    
+class GeneratedDocument(models.Model):
+    user_id = models.IntegerField(default=0)
+    template_name = models.CharField(max_length=255)  
+    file = models.FileField(upload_to='generated_docs/') 
+    created_at = models.DateTimeField(auto_now_add=True) 
+
+    def __str__(self):
+        return f"{self.template_name} - {self.user.username}"
 
 
 class PersonalDataAgreement(models.Model):

@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import connection
 from django.core.cache import cache
 from django.utils import timezone
+from .models import GeneratedDocument
 from .models import UserAvatar
 import os, bcrypt,re
 from django_ratelimit.decorators import ratelimit
@@ -341,7 +342,13 @@ def generate_doc(user_id, request):
             file_stream.getvalue(),
             content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
-    response['Content-Disposition'] = f'attachment; filename="generated_doc.docx"'
+    response['Content-Disposition'] = f'attachment; filename="{template_file}"'
+
+    GeneratedDocument.objects.create(
+        user_id = user_id,
+        template_name = template_file,
+        file = template_file
+    )
 
     return response
     
@@ -403,6 +410,8 @@ def success(request, username,user_id):
         }
     
     add = []
+
+    history = GeneratedDocument.objects.filter(user_id=user_id).order_by('-created_at')
     
     folder_path = os.path.join('main', 'templates', 'documents')
     files = os.listdir(folder_path)
@@ -469,8 +478,11 @@ def success(request, username,user_id):
                         'avatar_url': avatar_url,
                         'show_consent_modal': not accept_given,
                         'templates': templates,
-                        'lack_data':add
+                        'lack_data':add,
+                        'history': history
                     })
+                
+                
                 
             
             return generate_doc(user_id, request)
@@ -539,7 +551,8 @@ def success(request, username,user_id):
         'avatar_url': avatar_url,
         'show_consent_modal': not accept_given,
         'templates': templates,
-        'lack_data':add
+        'lack_data':add,
+        'history': history
     })
 
 
@@ -581,7 +594,7 @@ def generate_doc_with_context(template_file, context):
         file_stream.getvalue(),
         content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
-    response['Content-Disposition'] = f'attachment; filename="generated_doc.docx"'
+    response['Content-Disposition'] = f'attachment; filename="{template_file}"'
 
     return response
 
