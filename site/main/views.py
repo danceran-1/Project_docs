@@ -17,6 +17,7 @@ from django.http import JsonResponse
 from .models import City
 from docxtpl import DocxTemplate
 
+
 from django.http import HttpResponse
 from docxtpl import DocxTemplate
 from io import BytesIO
@@ -278,7 +279,12 @@ def check_personal_data(user_id,request):
         'ФИО': f'{name} {surname} {last_name}',
         'Город_проживания': city,
         'Дата_рождения': dob_str,
-        'дата_выдачи': current_date
+        'дата_выдачи': current_date,
+        'Серия':'Не указанно',
+        'Номер':'Не указанно',
+        'Кем':'Не указанно',
+        'Когда':'Не указанно',
+        'Код':'Не указанно'
         }
 
     return context
@@ -296,10 +302,14 @@ def lack_data(user_id,request):
 
     not_match = []
     keys = [i for i in context.keys()]
+    values = [i for i in context.values()]
 
-    for i in fields:
-        if i not in keys:
-            not_match.append(i)
+    for field in fields:
+        if field in context:
+            if context[field] == "Не указанно" or context[field] == '' or context[field] is None:
+                not_match.append(field)
+        else:
+            not_match.append(field)
 
     return not_match
 
@@ -406,6 +416,29 @@ def success(request, username,user_id):
     if request.method == 'POST':
         print(request.POST)
 
+        if avatar_file:
+            avatar_obj, created = UserAvatar.objects.get_or_create(user_id=user_id)
+            avatar_obj.avatar = avatar_file
+            avatar_obj.save()   
+
+        avatar_url = ''
+        avatar = UserAvatar.objects.filter(user_id=user_id).first()
+        if avatar and avatar.avatar:
+            avatar_url = avatar.avatar.url
+
+        if 'generate_doc_with_missing' in request.POST:
+            template_file = request.POST.get('template')
+            if not template_file:
+                messages.error(request, "Не выбран шаблон документа.")
+                return redirect('success', username=username, user_id=user_id)
+            
+            context = check_personal_data(user_id, request)
+            for key in request.POST:
+                if key.startswith('missing_'):
+                    field_name = key[len('missing_'):]
+                    context[field_name] = request.POST[key].strip()
+
+            return generate_doc_with_context(template_file, context)
 
         # Запись согласия
         if 'accept-consent' in request.POST:
@@ -424,8 +457,20 @@ def success(request, username,user_id):
                 print(add,"Не хвататет")
                 if add:
                     
-                    messages.info(request, f"Не хвтает {add} для создания документа.")
-                    return redirect('success', username=username, user_id=user_id)
+                    form_data = get_data(user_id)
+    
+                    return render(request, 'main/success.html', {
+                        'username': username,
+                        'user_id': user_id,
+                        'form_data': form_data,
+                        'full_name': f"{form_data['last_name']} {form_data['first_name']} {form_data['middle_name']}",
+                        'birth_date': form_data['birth_date'],
+                        'city': form_data['city'],
+                        'avatar_url': avatar_url,
+                        'show_consent_modal': not accept_given,
+                        'templates': templates,
+                        'lack_data':add
+                    })
                 
             
             return generate_doc(user_id, request)
@@ -469,15 +514,7 @@ def success(request, username,user_id):
             'birth_date': birth_date,
             'city': city
         }
-        if avatar_file:
-            avatar_obj, created = UserAvatar.objects.get_or_create(user_id=user_id)
-            avatar_obj.avatar = avatar_file
-            avatar_obj.save()   
-
-        avatar_url = ''
-        avatar = UserAvatar.objects.filter(user_id=user_id).first()
-        if avatar and avatar.avatar:
-            avatar_url = avatar.avatar.url
+        
 
         messages.success(request, 'Профиль успешно обновлён!')
 
@@ -485,19 +522,7 @@ def success(request, username,user_id):
     # GET запрос
     else:
         
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM personal_data WHERE user_id = %s", [user_id])
-            row = cursor.fetchone()
-            if row:
-                birth_date = row[4].strftime('%Y-%m-%d') if row[4] else ''
-
-                form_data = {
-                    'first_name': row[2],
-                    'last_name': row[1],
-                    'middle_name': row[3],
-                    'birth_date': birth_date,
-                    'city': row[5]
-                }
+        form_data = get_data(user_id)
 
         avatar_url = ''
         avatar = UserAvatar.objects.filter(user_id=user_id).first()
@@ -517,6 +542,48 @@ def success(request, username,user_id):
         'lack_data':add
     })
 
+
+def get_data(user_id):
+
+    form_data = {
+        'first_name': '',
+        'last_name': '',
+        'middle_name': '',
+        'birth_date': '',
+        'city': ''
+    }
+
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM personal_data WHERE user_id = %s", [user_id])
+        row = cursor.fetchone()
+        if row:
+            birth_date = row[4].strftime('%Y-%m-%d') if row[4] else ''
+
+            form_data = {
+                'first_name': row[2],
+                'last_name': row[1],
+                'middle_name': row[3],
+                'birth_date': birth_date,
+                'city': row[5]
+                }
+            
+    return form_data
+
+def generate_doc_with_context(template_file, context):
+    path = f"main/templates/documents/{template_file}"
+    doc = DocxTemplate(path)
+    file_stream = BytesIO()
+    doc.render(context)
+    doc.save(file_stream)
+    file_stream.seek(0)
+
+    response = HttpResponse(
+        file_stream.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
+    response['Content-Disposition'] = f'attachment; filename="generated_doc.docx"'
+
+    return response
 
 
 def success1(request,username,user_id):

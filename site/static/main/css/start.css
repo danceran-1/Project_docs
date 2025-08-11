@@ -28,6 +28,10 @@ body {
     position: absolute;
     opacity: 0.2;
     filter: brightness(1.5);
+    animation-duration: 20s;
+    animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+    animation-iteration-count: infinite;
+    will-change: transform;
 }
 
 .bg-file {
@@ -35,6 +39,9 @@ body {
     left: 5%;
     width: 120px;
     height: auto;
+    animation-name: floatFile;
+    animation-duration: 15s;
+    animation-delay: 0s;
 }
 
 .bg-bd {
@@ -42,6 +49,9 @@ body {
     right: 8%;
     width: 100px;
     height: auto;
+    animation-name: floatBD;
+    animation-duration: 18s;
+    animation-delay: 2s;
 }
 
 .bg-install {
@@ -49,6 +59,9 @@ body {
     left: 8%;
     width: 110px;
     height: auto;
+    animation-name: floatInstall;
+    animation-duration: 22s;
+    animation-delay: 4s;
 }
 
 .bg-lock {
@@ -56,6 +69,85 @@ body {
     right: 5%;
     width: 130px;
     height: auto;
+    animation-name: floatLock;
+    animation-duration: 20s;
+    animation-delay: 6s;
+}
+
+/* Анимации для фоновых элементов */
+@keyframes floatFile {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    20% {
+        transform: translate(40px, -25px) rotate(8deg) scale(1.05);
+    }
+    40% {
+        transform: translate(-20px, 20px) rotate(-5deg) scale(0.95);
+    }
+    60% {
+        transform: translate(30px, 15px) rotate(6deg) scale(1.02);
+    }
+    80% {
+        transform: translate(-15px, -30px) rotate(-3deg) scale(0.98);
+    }
+    100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+}
+
+@keyframes floatBD {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    25% {
+        transform: translate(-35px, 20px) rotate(-8deg) scale(1.03);
+    }
+    50% {
+        transform: translate(25px, -30px) rotate(10deg) scale(0.97);
+    }
+    75% {
+        transform: translate(-20px, 25px) rotate(-6deg) scale(1.04);
+    }
+    100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+}
+
+@keyframes floatInstall {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    30% {
+        transform: translate(45px, -20px) rotate(7deg) scale(1.06);
+    }
+    60% {
+        transform: translate(-25px, 35px) rotate(-8deg) scale(0.94);
+    }
+    100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+}
+
+@keyframes floatLock {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    20% {
+        transform: translate(-40px, -25px) rotate(-10deg) scale(1.04);
+    }
+    40% {
+        transform: translate(30px, 20px) rotate(8deg) scale(0.96);
+    }
+    60% {
+        transform: translate(-20px, -35px) rotate(-6deg) scale(1.03);
+    }
+    80% {
+        transform: translate(35px, 15px) rotate(5deg) scale(0.97);
+    }
+    100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
 }
 
 /* Основной контейнер */
@@ -121,6 +213,7 @@ body {
     flex-direction: column;
     align-items: center;
     max-width: 220px;
+    position: relative;
 }
 
 .feature-icon {
@@ -134,6 +227,13 @@ body {
     margin-bottom: 12px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.feature-icon:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(125, 190, 239, 0.4);
 }
 
 .feature-icon img {
@@ -150,6 +250,97 @@ body {
     line-height: 1.5;
     text-align: center;
     opacity: 0.9;
+}
+
+/* Всплывающие окна с гифками */
+.tooltip-popup {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.feature:hover .tooltip-popup {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-120%);
+    pointer-events: auto;
+}
+
+.tooltip-content {
+    background: rgba(28, 85, 131, 0.95);
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(125, 190, 239, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    min-width: 280px;
+    max-width: 320px;
+    position: relative;
+}
+
+.tooltip-content::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 10px solid transparent;
+    border-top-color: rgba(28, 85, 131, 0.95);
+    border-bottom: none;
+}
+
+.tooltip-gif {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #000;
+    display: block;
+}
+
+.tooltip-gif::-webkit-media-controls {
+    display: none;
+}
+
+.tooltip-gif::-webkit-media-controls-panel {
+    display: none;
+}
+
+/* Стили для отладки */
+.tooltip-gif:not([src]) {
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.tooltip-gif:not([src])::before {
+    content: 'Видео загружается...';
+}
+
+.tooltip-text h4 {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.tooltip-text p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    line-height: 1.4;
+    text-align: center;
 }
 
 /* Кнопки действий */
@@ -225,6 +416,45 @@ body {
         font-size: 14px;
     }
     
+    /* Уменьшаем интенсивность анимации на мобильных */
+    .bg-element {
+        animation-duration: 25s;
+    }
+    
+    .bg-file {
+        animation-duration: 20s;
+    }
+    
+    .bg-bd {
+        animation-duration: 23s;
+    }
+    
+    .bg-install {
+        animation-duration: 28s;
+    }
+    
+    .bg-lock {
+        animation-duration: 25s;
+    }
+    
+    .tooltip-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        width: 90vw;
+        max-width: 300px;
+    }
+    
+    .feature:hover .tooltip-popup {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    
+    .tooltip-content {
+        min-width: auto;
+        max-width: none;
+    }
+    
     .action-buttons {
         flex-direction: column;
         align-items: center;
@@ -283,6 +513,37 @@ body {
         font-size: 13px;
     }
     
+    /* Еще больше уменьшаем анимацию на маленьких экранах */
+    .bg-element {
+        animation-duration: 30s;
+        opacity: 0.15;
+    }
+    
+    .bg-file, .bg-bd, .bg-install, .bg-lock {
+        width: 80px;
+    }
+    
+    .tooltip-popup {
+        width: 95vw;
+        max-width: 280px;
+    }
+    
+    .tooltip-content {
+        padding: 15px;
+    }
+    
+    .tooltip-gif {
+        height: 120px;
+    }
+    
+    .tooltip-text h4 {
+        font-size: 16px;
+    }
+    
+    .tooltip-text p {
+        font-size: 13px;
+    }
+    
     .btn {
         padding: 14px 28px;
         font-size: 15px;
@@ -301,56 +562,4 @@ body {
         width: 50px;
         height: 50px;
     }
-    
-    .bg-element {
-        opacity: 0.15;
-    }
-    
-    .bg-file, .bg-bd, .bg-install, .bg-lock {
-        width: 80px;
-    }
-} 
-
-.feature-icon img {
-  position: relative;
-  cursor: pointer;
-}
-
-.feature-icon img::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 110%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(0,0,0,0.8);
-  color: white;
-  padding: 6px 10px;
-  border-radius: 4px;
-  white-space: nowrap;
-  font-size: 12px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 10;
-}
-
-.feature-icon img::before {
-  content: "";
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 6px;
-  border-style: solid;
-  border-color: rgba(0,0,0,0.8) transparent transparent transparent;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 10;
-}
-
-.feature-icon img:hover::after,
-.feature-icon img:hover::before {
-  opacity: 1;
-  pointer-events: auto;
 }

@@ -2,6 +2,7 @@
 <html>
 <head>
     <style>
+        
        
         .modal {
         display: none; /* по умолчанию скрыто */
@@ -389,13 +390,30 @@
                         {% for template in templates %}
                             <label style="display: block; margin: 10px 0;">
                                 <input type="radio" name="template" value="{{ template }}" {% if forloop.first %}required{% endif %}>
-                                Шаблон {{ forloop.counter }} — {{ template|cut:".docx" }} {{lack_data}}
+                                Шаблон {{ forloop.counter }} — {{ template|cut:".docx" }}
                             </label>
                         {% endfor %}
 
                         <button type="submit" class="doc-button" name="download_doc" style="margin-top: 20px;">Скачать документ</button>
                     </form>
                 </div>
+            </div>
+            <!-- окно для ввода недостающих данных -->
+            <div id="missingDataModal" class="modal" style="display: {% if lack_data %}block{% else %}none{% endif %};">
+            <div class="modal-content">
+                <span class="close" onclick="document.getElementById('missingDataModal').style.display='none'">&times;</span>
+                <h2>Заполните недостающие данные</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="generate_doc_with_missing" value="1">
+                    <input type="hidden" name="template" value="{{ request.POST.template }}">
+                    {% for field in lack_data %}
+                        <label>{{ field }}:</label>
+                        <input type="text" name="missing_{{ field }}" required>
+                    {% endfor %}
+                    <button type="submit" class="doc-button" style="margin-top: 20px;">Сгенерировать документ</button>
+                </form>
+            </div>
             </div>
             <!-- Модальное окно -->
             <div id="consent-modal" class="modal" style="display: {% if show_consent_modal %}block{% else %}none{% endif %};">

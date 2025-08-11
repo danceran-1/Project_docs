@@ -33,24 +33,62 @@
                 <div class="feature-icon">
                     <img src="{% static 'main/img/1.png' %}" alt="Store Forms">
                 </div>
-            <p class="feature-text">Храните формы и заполняйте одним кликом</p>
-        </div>
-        
-        <div class="feature" data-tooltip="Безопасная авторизация и защита ваших личных данных от несанкционированного доступа.">
-            <div class="feature-icon">
-                <img src="{% static 'main/img/2.png' %}" alt="Secure">
+                <p class="feature-text">Храните формы и заполняйте одним кликом</p>
+                <!-- Всплывающее окно с видео -->
+                <div class="tooltip-popup">
+                    <div class="tooltip-content">
+                        <video autoplay loop muted playsinline class="tooltip-gif">
+                            <source src="{% static 'main/gifs/form_process.mp4' %}" type="video/mp4">
+                            Ваш браузер не поддерживает видео.
+                        </video>
+                        <div class="tooltip-text">
+                            <h4>Быстрое заполнение форм</h4>
+                            <p>Храните все ваши формы в одном месте и заполняйте их одним кликом, экономя время.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p class="feature-text">Безопасная авторизация и защита данных</p>
-        </div>
+        
+            <div class="feature" data-tooltip="Безопасная авторизация и защита ваших личных данных от несанкционированного доступа.">
+                <div class="feature-icon">
+                    <img src="{% static 'main/img/2.png' %}" alt="Secure">
+                </div>
+                <p class="feature-text">Безопасная авторизация и защита данных</p>
+                <!-- Всплывающее окно с видео -->
+                <div class="tooltip-popup">
+                    <div class="tooltip-content">
+                        <video autoplay loop muted playsinline class="tooltip-gif">
+                            <source src="{% static 'main/gifs/security_process.mp4' %}" type="video/mp4">
+                            Ваш браузер не поддерживает видео.
+                        </video>
+                        <div class="tooltip-text">
+                            <h4>Защита данных</h4>
+                            <p>Безопасная авторизация и защита ваших личных данных от несанкционированного доступа.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         
             <div class="feature" data-tooltip="Доступ к вашим формам с любого устройства и в любое время, где бы вы ни были.">
                 <div class="feature-icon">
                     <img src="{% static 'main/img/3.png' %}" alt="Access">
                 </div>
-                    <p class="feature-text">Быстрый доступ с любого устройства</p>
+                <p class="feature-text">Быстрый доступ с любого устройства</p>
+                <!-- Всплывающее окно с видео -->
+                <div class="tooltip-popup">
+                    <div class="tooltip-content">
+                        <video autoplay loop muted playsinline class="tooltip-gif">
+                            <source src="{% static 'main/gifs/access_process.mp4' %}" type="video/mp4">
+                            Ваш браузер не поддерживает видео.
+                        </video>
+                        <div class="tooltip-text">
+                            <h4>Доступ везде</h4>
+                            <p>Доступ к вашим формам с любого устройства и в любое время, где бы вы ни были.</p>
+                        </div>
+                    </div>
                 </div>
+            </div>
         </div>
-
 
         <!-- Кнопки действий -->
         <div class="action-buttons">
@@ -58,5 +96,64 @@
             <a href="{% url 'about' %}" class="btn btn-secondary">Войти</a>
         </div>
     </div>
+
+    <script>
+        // JavaScript для улучшения работы видео и анимации
+        document.addEventListener('DOMContentLoaded', function() {
+            const videos = document.querySelectorAll('.tooltip-gif');
+            const bgElements = document.querySelectorAll('.bg-element');
+            
+            // Управление видео
+            videos.forEach(function(video) {
+                // Воспроизводим видео при наведении
+                video.parentElement.parentElement.parentElement.addEventListener('mouseenter', function() {
+                    video.play().catch(function(error) {
+                        console.log('Ошибка воспроизведения видео:', error);
+                    });
+                });
+                
+                // Останавливаем видео при уходе курсора
+                video.parentElement.parentElement.parentElement.addEventListener('mouseleave', function() {
+                    video.pause();
+                    video.currentTime = 0;
+                });
+            });
+            
+            // Управление анимацией фоновых элементов
+            let isAnimationPaused = false;
+            
+            // Приостанавливаем анимацию при наведении на основной контент
+            document.querySelector('.main-container').addEventListener('mouseenter', function() {
+                if (!isAnimationPaused) {
+                    isAnimationPaused = true;
+                    bgElements.forEach(function(element) {
+                        element.style.animationPlayState = 'paused';
+                    });
+                }
+            });
+            
+            // Возобновляем анимацию при уходе курсора
+            document.querySelector('.main-container').addEventListener('mouseleave', function() {
+                if (isAnimationPaused) {
+                    isAnimationPaused = false;
+                    bgElements.forEach(function(element) {
+                        element.style.animationPlayState = 'running';
+                    });
+                }
+            });
+            
+            // Добавляем плавное появление элементов при загрузке страницы
+            bgElements.forEach(function(element, index) {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+                
+                setTimeout(function() {
+                    element.style.transition = 'opacity 1s ease, transform 1s ease';
+                    element.style.opacity = '0.2';
+                    element.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
 </body>
 </html>
