@@ -16,7 +16,10 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib import messages
 from django.http import JsonResponse
 from .models import City
+
+from datetime import date
 from docxtpl import DocxTemplate
+from urllib.parse import quote
 
 
 from django.http import HttpResponse
@@ -271,10 +274,20 @@ def check_personal_data(user_id,request):
     current_time = timezone.now()
     current_date = current_time.date().strftime('%d.%m.%Y')
 
+    today = timezone.now().date()
+
     if dob:
         dob_str = dob.strftime('%d.%m.%Y')
     else:
         dob_str = ''
+
+    age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+    of_legal_age = "Да"
+
+    if age < 18: 
+        of_legal_age = "Нет"
+
 
     context = {
         'ФИО': f'{name} {surname} {last_name}',
@@ -285,7 +298,9 @@ def check_personal_data(user_id,request):
         'Номер':'Не указанно',
         'Кем':'Не указанно',
         'Когда':'Не указанно',
-        'Код':'Не указанно'
+        'Код':'Не указанно',
+        'Возраст':age,
+        'Совершеннолетний':of_legal_age
         }
 
     return context
@@ -315,7 +330,7 @@ def lack_data(user_id,request):
     return not_match
 
 
-def generate_doc(user_id, request):
+def generate_doc(user_id, request,surname):
 
     template_file = request.POST.get('template')
     path = f"main/templates/documents/{template_file}"
@@ -338,11 +353,17 @@ def generate_doc(user_id, request):
     doc.save(file_stream)
     file_stream.seek(0)
 
+    filename = template_file
+    filename = filename.split(".docx")[0]
+    print(filename)
+    quoted_filename = quote(filename)
+    quoted_surname = quote(surname)
+    
     response = HttpResponse(
             file_stream.getvalue(),
             content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
-    response['Content-Disposition'] = f'attachment; filename="{template_file}"'
+    response['Content-Disposition'] = f"attachment; filename*=UTF-8''{quoted_filename}_{quoted_surname}.docx"
 
     GeneratedDocument.objects.create(
         user_id = user_id,
@@ -422,6 +443,9 @@ def success(request, username,user_id):
 
     avatar_file = request.FILES.get('avatar')
 
+    info_personal = get_data(user_id)
+    surname = info_personal['last_name']
+
     if request.method == 'POST':
         print(request.POST)
 
@@ -435,8 +459,12 @@ def success(request, username,user_id):
         if avatar and avatar.avatar:
             avatar_url = avatar.avatar.url
 
+        if 'clear_history' in request.POST:
+            return delete_history(request,user_id,username)
+
         if 'generate_doc_with_missing' in request.POST:
             template_file = request.POST.get('template')
+            print(template_file,"ФАЙЛ")
             if not template_file:
                 messages.error(request, "Не выбран шаблон документа.")
                 return redirect('success', username=username, user_id=user_id)
@@ -447,7 +475,7 @@ def success(request, username,user_id):
                     field_name = key[len('missing_'):]
                     context[field_name] = request.POST[key].strip()
 
-            return generate_doc_with_context(template_file, context)
+            return generate_doc_with_context(template_file, context,user_id,surname)
 
         # Запись согласия
         if 'accept-consent' in request.POST:
@@ -466,26 +494,15 @@ def success(request, username,user_id):
                 print(add,"Не хвататет")
                 if add:
                     
-                    form_data = get_data(user_id)
-    
-                    return render(request, 'main/success.html', {
-                        'username': username,
-                        'user_id': user_id,
-                        'form_data': form_data,
-                        'full_name': f"{form_data['last_name']} {form_data['first_name']} {form_data['middle_name']}",
-                        'birth_date': form_data['birth_date'],
-                        'city': form_data['city'],
-                        'avatar_url': avatar_url,
-                        'show_consent_modal': not accept_given,
-                        'templates': templates,
-                        'lack_data':add,
-                        'history': history
-                    })
-                
+                    template_file = request.POST.get('template')
+                    request.session['template_file'] = template_file
+                    request.session['lack_data'] = add
+                    request.session['form_data'] = info_personal
+                    return redirect('success', username=username, user_id=user_id)
                 
                 
             
-            return generate_doc(user_id, request)
+            return generate_doc(user_id, request,surname)
 
 
         
@@ -527,7 +544,7 @@ def success(request, username,user_id):
             'city': city
         }
         
-
+        # lack_data1 = []
         messages.success(request, 'Профиль успешно обновлён!')
 
         
@@ -541,6 +558,15 @@ def success(request, username,user_id):
         if avatar and avatar.avatar:
             avatar_url = avatar.avatar.url
 
+    lack_data1 = request.session.pop('lack_data', [])
+    if not lack_data1:
+        lack_data1 = []
+    form_data_from_session = request.session.pop('form_data', None)
+    if form_data_from_session:
+        form_data = form_data_from_session
+
+    template_file = request.session.pop('template_file', '')
+
     return render(request, 'main/success.html', {
         'username': username,
         'user_id': user_id,
@@ -551,7 +577,8 @@ def success(request, username,user_id):
         'avatar_url': avatar_url,
         'show_consent_modal': not accept_given,
         'templates': templates,
-        'lack_data':add,
+        'lack_data':lack_data1,
+        'template_file': template_file,
         'history': history
     })
 
@@ -573,8 +600,8 @@ def get_data(user_id):
             birth_date = row[4].strftime('%Y-%m-%d') if row[4] else ''
 
             form_data = {
-                'first_name': row[2],
-                'last_name': row[1],
+                'first_name': row[1],
+                'last_name': row[2],
                 'middle_name': row[3],
                 'birth_date': birth_date,
                 'city': row[5]
@@ -582,7 +609,7 @@ def get_data(user_id):
             
     return form_data
 
-def generate_doc_with_context(template_file, context):
+def generate_doc_with_context(template_file, context,user_id,surname):
     path = f"main/templates/documents/{template_file}"
     doc = DocxTemplate(path)
     file_stream = BytesIO()
@@ -590,14 +617,33 @@ def generate_doc_with_context(template_file, context):
     doc.save(file_stream)
     file_stream.seek(0)
 
+    filename = template_file
+    filename = filename.split(".docx")[0]
+    print(filename)
+    quoted_filename = quote(filename)
+    quoted_surname = quote(surname)
+
     response = HttpResponse(
         file_stream.getvalue(),
         content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
-    response['Content-Disposition'] = f'attachment; filename="{template_file}"'
+    response['Content-Disposition'] = f"attachment; filename*=UTF-8''{quoted_filename}_{quoted_surname}.docx"
+
+
+    GeneratedDocument.objects.create(
+        user_id = user_id,
+        template_name = template_file,
+        file = template_file
+    )
 
     return response
 
+
+def delete_history(request,user_id,username):
+    GeneratedDocument.objects.filter(user_id=user_id).delete()
+    messages.success(request, 'История документов успешно очищена.')
+    return redirect('success', username=username, user_id=user_id)
+    
 
 def success1(request,username,user_id):
     if request.method == 'POST':

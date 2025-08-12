@@ -69,6 +69,9 @@
         table tbody tr td a:hover {
             background: #45a049;
         }
+        body {
+        transition: background-color 0.5s ease, color 0.5s ease;
+        }
 
         /* Тёмная тема */
         body.dark table {
@@ -532,7 +535,7 @@
                 <form method="post">
                     {% csrf_token %}
                     <input type="hidden" name="generate_doc_with_missing" value="1">
-                    <input type="hidden" name="template" value="{{ request.POST.template }}">
+                    <input type="hidden" name="template" value="{{ template_file }}">
                     {% for field in lack_data %}
                         <label>{{ field }}:</label>
                         <input type="text" name="missing_{{ field }}" required>
@@ -594,7 +597,7 @@
                 {% for doc in history %}
                 <tr style="border-bottom: 1px solid #eee;">
                     <td style="padding: 6px 8px;">{{ doc.template_name }}</td>
-                    <td style="padding: 6px 8px; color: #666;">{{ doc.created_at|date:"d.m.Y H:i" }}</td>
+                    <td style="padding: 6px 8px; color: #666;">{{ doc.created_at|date:"Y-m-d" }}</td>
                     <td style="padding: 6px 8px; text-align: center;">
                         <a href="{{ doc.file.url }}" download style="
                             background: #4CAF50;
@@ -618,7 +621,25 @@
                 {% endfor %}
             </tbody>
         </table>
+    <div style="margin-top: 10px; text-align: right;">
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" name="clear_history" style="
+                background: #e74c3c;
+                color: white;
+                border: none;
+                padding: 3px 6px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 0.9em;
+                transition: background 0.2s;
+            " onmouseover="this.style.background='#c0392b'" onmouseout="this.style.background='#e74c3c'">
+                🗑️ Удалить историю
+            </button>
+        </form>
     </div>
+    </div>
+    
 
 
 
@@ -630,12 +651,13 @@
         const body = document.body;
         const current = body.classList.contains('dark') ? 'dark' : 'light';
         const newTheme = current === 'dark' ? 'light' : 'dark';
+
         body.classList.remove(current);
         body.classList.add(newTheme);
+
         localStorage.setItem('theme', newTheme);
         updateThemeIcon(newTheme);
     }
-
     function updateThemeIcon(theme) {
         const btn = document.getElementById('theme-btn');
         btn.textContent = theme === 'dark' ? '☀️' : '🌙';

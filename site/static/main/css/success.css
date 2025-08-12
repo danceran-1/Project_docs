@@ -1,0 +1,909 @@
+/* Стили для template-label */
+.template-label {
+    display: block;
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.template-label:hover {
+    background-color: #f5f5f5;
+}
+
+body.dark .template-label:hover {
+    background-color: #3a3a3a;
+}
+
+.template-label input[type="radio"] {
+    margin-right: 8px;
+}
+
+/* Стили для скрытых элементов */
+.hidden-btn {
+    display: none !important;
+}
+
+/* Стили для модальных окон */
+.modal {
+    display: none; /* по умолчанию скрыто */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 50%;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Стили для таблиц */
+table {
+    background: #fff;
+    color: #333;
+    border-collapse: collapse;
+    border-radius: 6px;
+    overflow: hidden;
+    font-size: 0.85em;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+}
+
+table thead {
+    background: #f7f9fa;
+    color: #555;
+}
+
+table tbody tr {
+    border-bottom: 1px solid #eee;
+}
+
+table tbody tr:last-child {
+    border-bottom: none;
+}
+
+table tbody tr td {
+    color: #333;
+}
+
+table tbody tr td a {
+    background: #4CAF50;
+    color: white;
+    transition: background 0.2s;
+}
+
+table tbody tr td a:hover {
+    background: #45a049;
+}
+
+/* Тёмная тема для таблиц */
+body.dark table {
+    background: #2c2f33;
+    color: #ccc;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.6);
+}
+
+body.dark table thead {
+    background: #202225;
+    color: #bbb;
+}
+
+body.dark table tbody tr {
+    border-bottom: 1px solid #444;
+}
+
+body.dark table tbody tr td {
+    color: #ddd;
+}
+
+body.dark h2 {
+    color: #eee !important;
+}
+
+body.dark table {
+    background: #2a2a2a !important;
+    color: #ddd !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.8) !important;
+}
+
+body.dark table thead {
+    background: #444 !important;
+    color: #eee !important;
+}
+
+body.dark table tbody tr {
+    border-bottom: 1px solid #555 !important;
+}
+
+body.dark table tbody tr td {
+    color: #ddd !important;
+}
+
+body.dark table tbody tr td a {
+    background: #5a9bd5 !important;
+    color: #fff !important;
+    text-decoration: none;
+}
+
+body.dark table tbody tr td a:hover {
+    background: #4180c0 !important;
+}
+
+body.dark table tbody tr td a {
+    background: #3a9d3a;
+    color: #eee;
+}
+
+body.dark table {
+    background: #2a2a2a; /* тёмный фон таблицы */
+    color: #ddd;         /* светлый цвет текста */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
+body.dark table thead {
+    background: #444;    /* тёмный фон заголовков */
+    color: #eee;         /* светлый цвет заголовков */
+}
+
+body.dark table tbody tr {
+    border-bottom: 1px solid #555; /* более тёмная граница строк */
+}
+
+body.dark table tbody tr td a {
+    background: #5a9bd5; /* кнопка скачивания в светлом цвете */
+    color: #fff;
+}
+
+body.dark table tbody tr td a:hover {
+    background: #4180c0;
+}
+
+body.dark table tbody tr td a:hover {
+    background: #2d7a2d;
+}
+
+/* Основные стили body */
+body {
+    min-height: 100vh;
+    margin: 0;
+    background: linear-gradient(120deg, #1677c3 0%, #5ec6fa 100%);
+    font-family: Arial, sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body.light {
+    background: linear-gradient(120deg, #1677c3 0%, #5ec6fa 100%);
+    color: #000;
+}
+
+body.dark {
+    background: linear-gradient(120deg, #232526 0%, #414345 100%);
+    color: #f0f0f0;
+}
+
+body.dark label,
+body.dark .passport-title,
+body.dark .form-group label,
+body.dark .form-row .form-group label,
+body.dark .passport-fields label {
+    color: #fff !important;
+}
+
+/* Основной wrapper */
+.main-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: -140px;
+    right: 0;
+    bottom: 0;
+}
+
+/* Блок с подсказкой */
+.hint-block {
+    background: rgba(255,255,255,0.15);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    border-radius: 12px;
+    padding: 28px 32px 24px 32px;
+    min-width: 320px;
+    max-width: 350px;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 400;
+    flex-shrink: 0;
+    align-self: center;
+    margin: 0 60px 0 40px;
+    position: relative;
+    top: -150px;
+    margin-top: 0;
+    right: -120px;
+}
+
+.hint-block-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+/* Контейнер формы */
+.form-container {
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+    border-radius: 16px;
+    padding: 48px 56px 40px 56px;
+    min-width: 520px;
+    max-width: 600px;
+    width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+body.dark .form-container {
+    background: #232526;
+    color: #f0f0f0;
+}
+
+/* Центрированный текст */
+.center-text {
+    text-align: center;
+    font-size: 36px;
+    font-weight: 700;
+    color: #1677c3;
+    margin-bottom: 18px;
+    align-self: center;
+}
+
+/* Контейнер аватара */
+.avatar-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 18px;
+    align-self: center;
+}
+
+.avatar-wrapper {
+    width: 120px;
+    height: 120px;
+    border: 3px solid #1677c3;
+    border-radius: 8px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.avatar-wrapper.disabled {
+    opacity: 1;
+    pointer-events: none;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Скрыть стандартный input file */
+.hidden-input {
+    display: none;
+}
+
+/* Форма внутри контейнера */
+.form-container form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/* Кнопка выбора фото под аватаркой */
+.choose-photo-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 2px; /* ближе к аватару */
+    margin-bottom: 10px; /* опустить поля ниже */
+    width: 100%;
+    position: relative;
+    align-self: center;
+}
+
+.choose-photo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #1677c3;
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.2;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+    text-align: center;
+    position: relative;
+    padding: 8px 32px 8px 16px;
+    border-radius: 6px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(22, 119, 195, 0.2);
+}
+
+.choose-photo::after {
+    content: "";
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background-image: url('/static/main/img/PaperClip.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    filter: brightness(0) invert(1); /* Делаем скрепку белой */
+}
+
+.choose-photo:hover {
+    background: #0f5a94;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(22, 119, 195, 0.3);
+}
+
+.choose-photo:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(22, 119, 195, 0.2);
+}
+
+.choose-photo.disabled {
+    display: none;
+}
+
+/* Тёмная тема для кнопки выбора фото */
+body.dark .choose-photo {
+    background: #5ab0ff;
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(90, 176, 255, 0.3);
+}
+
+body.dark .choose-photo:hover {
+    background: #7bc0ff;
+    box-shadow: 0 4px 8px rgba(90, 176, 255, 0.4);
+}
+
+body.dark .choose-photo.disabled {
+    display: none;
+}
+
+/* Строки формы */
+.form-row {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 18px;
+    width: 100%;
+}
+
+.form-row .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+/* Группы формы */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 18px;
+    width: 100%;
+    position: relative;
+}
+
+.form-group label {
+    font-size: 18px;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    text-align: center;
+    cursor: pointer;
+}
+
+.form-row .form-group label {
+    color: #222;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 6px;
+    background: #eaf6ff;
+    color: #222;
+    font-size: 17px;
+    min-width: 0;
+    text-align: center;
+}
+
+.form-group input[readonly] {
+    background: #f5f5f5 !important;
+    color: #999 !important;
+    cursor: not-allowed !important;
+}
+
+body.dark .form-group input[readonly] {
+    background: #3a3a3a !important;
+    color: #777 !important;
+}
+
+.form-group input[readonly] + label::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    cursor: not-allowed;
+    z-index: 1;
+}
+
+/* Блок паспорта */
+.passport-block {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.passport-title {
+    color: #1677c3;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.passport-title .tooltip {
+    visibility: hidden;
+    opacity: 0;
+    width: 370px;
+    background: #222;
+    color: #fff;
+    text-align: left;
+    border-radius: 8px;
+    padding: 16px 18px;
+    position: absolute;
+    z-index: 10;
+    left: 110%;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: opacity 0.2s;
+    font-size: 15px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+}
+
+.passport-title img:hover + .tooltip,
+.passport-title img:focus + .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.passport-title img {
+    width: 22px;
+    height: 22px;
+    margin-left: 6px;
+}
+
+.passport-fields {
+    display: flex;
+    gap: 32px;
+    width: 100%;
+}
+
+.passport-fields .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+/* Строка кнопок */
+.button-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 18px;
+    width: 100%;
+    padding-right: 0;
+    box-sizing: border-box;
+    margin-right: 0;
+    align-self: stretch;
+    position: relative;
+    right: -8px;
+    margin-right: -8px;
+}
+
+.edit-btn, .doc-button {
+    display: flex;
+    align-items: center;
+    background: #ffb95a;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 22px 8px 16px;
+    box-shadow: 0 2px 8px rgba(22,119,195,0.08);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.edit-btn:hover, .doc-button:hover {
+    background: #ffa726;
+}
+
+.edit-btn img, .doc-button img {
+    width: 20px;
+    height: 20px;
+    margin-left: 8px;
+}
+
+/* Переключатель темы */
+.theme-toggle {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1000;
+}
+
+.theme-toggle button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 8px;
+    transition: transform 0.2s;
+}
+
+.theme-toggle button:hover {
+    transform: scale(1.2);
+}
+
+/* Модальные окна */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 40%;
+}
+
+body.dark .modal-content {
+    background-color: #232526;
+}
+
+.close {
+    float: right;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+/* Адаптивность */
+@media (max-width: 900px) {
+    .main-wrapper { 
+        flex-direction: column; 
+    }
+    .hint-block { 
+        margin: 0 0 32px 0; 
+    }
+    .form-container { 
+        min-width: 90vw; 
+        max-width: 98vw; 
+        padding: 18px 4vw; 
+    }
+    .modal-content { 
+        width: 80%; 
+    }
+}
+
+/* Стили для истории документов */
+.history-section {
+    margin-top: 20px;
+}
+
+.history-title {
+    font-size: 1.2em;
+    color: #333;
+    margin-bottom: 8px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 4px;
+}
+
+.history-table {
+    width: auto;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 6px;
+    overflow: hidden;
+    font-size: 0.85em;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+}
+
+.history-table thead {
+    background: #f7f9fa; 
+    color: #555;
+}
+
+.history-table tbody tr {
+    border-bottom: 1px solid #eee;
+}
+
+.history-table tbody tr td {
+    padding: 6px 8px;
+}
+
+.history-table tbody tr td:last-child {
+    text-align: center;
+}
+
+.history-table tbody tr td a {
+    background: #4CAF50;
+    color: white;
+    padding: 3px 6px;
+    border-radius: 3px;
+    text-decoration: none;
+    font-size: 0.8em;
+    transition: background 0.2s;
+}
+
+.history-table tbody tr td a:hover {
+    background: #45a049;
+}
+
+/* Тёмная тема для истории */
+body.dark .history-title {
+    color: #eee;
+    border-bottom-color: #555;
+}
+
+body.dark .history-table {
+    background: #2a2a2a;
+    color: #ddd;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
+body.dark .history-table thead {
+    background: #444;
+    color: #eee;
+}
+
+body.dark .history-table tbody tr {
+    border-bottom-color: #555;
+}
+
+body.dark .history-table tbody tr td {
+    color: #ddd;
+}
+
+body.dark .history-table tbody tr td a {
+    background: #5a9bd5;
+    color: #fff;
+}
+
+body.dark .history-table tbody tr td a:hover {
+    background: #4180c0;
+}
+
+/* Стили для кнопки скачивания в истории */
+.download-btn {
+    background: #4CAF50;
+    color: white;
+    padding: 3px 6px;
+    border-radius: 3px;
+    text-decoration: none;
+    font-size: 0.8em;
+    transition: background 0.2s;
+}
+
+.download-btn:hover {
+    background: #45a049;
+}
+
+body.dark .download-btn {
+    background: #5a9bd5;
+    color: #fff;
+}
+
+body.dark .download-btn:hover {
+    background: #4180c0;
+}
+
+/* Стили для кнопок в модальных окнах */
+.modal-content .doc-button {
+    margin-top: 20px;
+}
+
+/* ===== СТИЛИ ДЛЯ SWEETALERT2 ===== */
+
+/* Базовые стили для уведомлений */
+.swal2-toast {
+    background-color: #fff !important;
+    color: #333 !important;
+    border: 1px solid #ddd !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    border-radius: 8px !important;
+}
+
+body.dark .swal2-toast {
+    background-color: #2a2a2a !important;
+    color: #fff !important;
+    border: 1px solid #555 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    border-radius: 8px !important;
+}
+
+/* Стили для текста */
+.swal2-toast .swal2-title {
+    color: #333 !important;
+}
+
+body.dark .swal2-toast .swal2-title {
+    color: #fff !important;
+}
+
+.swal2-toast .swal2-html-container {
+    color: #666 !important;
+}
+
+body.dark .swal2-toast .swal2-html-container {
+    color: #ddd !important;
+}
+
+/* Стили для иконок */
+.swal2-toast .swal2-icon {
+    border-width: 2px !important;
+    border-style: solid !important;
+}
+
+/* Иконка Info */
+.swal2-toast .swal2-icon.swal2-info {
+    border-color: #1677c3 !important;
+    color: #1677c3 !important;
+}
+
+body.dark .swal2-toast .swal2-icon.swal2-info {
+    border-color: #5ab0ff !important;
+    color: #5ab0ff !important;
+}
+
+/* Иконка Success - ОСОБЫЕ СТИЛИ */
+.swal2-toast .swal2-icon.swal2-success {
+    border: none !important;
+    background: transparent !important;
+}
+
+.swal2-toast .swal2-icon.swal2-success .swal2-success-ring {
+    border: 2px solid #4CAF50 !important;
+    border-radius: 50% !important;
+    animation: none !important;
+}
+
+.swal2-toast .swal2-icon.swal2-success .swal2-success-line {
+    background-color: #4CAF50 !important;
+}
+
+/* Полностью скрываем проблемный элемент */
+.swal2-toast .swal2-icon.swal2-success .swal2-success-fix,
+.swal2-success-fix {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+}
+
+/* Иконка Error */
+.swal2-toast .swal2-icon.swal2-error {
+    border-color: #f44336 !important;
+    color: #f44336 !important;
+}
+
+body.dark .swal2-toast .swal2-icon.swal2-error {
+    border-color: #f44336 !important;
+    color: #f44336 !important;
+}
+
+/* Иконка Warning */
+.swal2-toast .swal2-icon.swal2-warning {
+    border-color: #ff9800 !important;
+    color: #ff9800 !important;
+}
+
+body.dark .swal2-toast .swal2-icon.swal2-warning {
+    border-color: #ff9800 !important;
+    color: #ff9800 !important;
+}
+
+/* Стили для иконок в модальных окнах */
+.swal2-popup .swal2-icon {
+    border-width: 2px !important;
+    border-style: solid !important;
+}
+
+body.dark .swal2-popup .swal2-icon {
+    border-width: 2px !important;
+    border-style: solid !important;
+}
+
+/* Стили для модальных окон SweetAlert2 в темной теме */
+body.dark .swal2-popup {
+    background-color: #2a2a2a !important;
+    color: #fff !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+    border-radius: 12px !important;
+}
+
+/* Стили для модальных окон в светлой теме */
+.swal2-popup {
+    background-color: #fff !important;
+    color: #333 !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2) !important;
+    border-radius: 12px !important;
+}
+
+body.dark .swal2-popup .swal2-title {
+    color: #fff !important;
+}
+
+body.dark .swal2-popup .swal2-html-container {
+    color: #ddd !important;
+}
+
+body.dark .swal2-popup .swal2-confirm {
+    background-color: #5ab0ff !important;
+    color: #fff !important;
+}
+
+body.dark .swal2-popup .swal2-cancel {
+    background-color: #666 !important;
+    color: #fff !important;
+}
+
+
