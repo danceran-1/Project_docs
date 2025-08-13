@@ -21,7 +21,7 @@ from datetime import date
 from docxtpl import DocxTemplate
 from urllib.parse import quote
 
-
+from redis_db import RedisClient
 from django.http import HttpResponse
 from docxtpl import DocxTemplate
 from io import BytesIO
@@ -29,6 +29,7 @@ from django.db import connection
 
 from docx import Document
 
+redis_client = RedisClient()
 
 def index(request):
     return render(request, 'main/index.html')
@@ -317,8 +318,6 @@ def lack_data(user_id,request):
     fields = re.findall(r'\{\{\s*([^}]+)\s*\}\}', text)
 
     not_match = []
-    keys = [i for i in context.keys()]
-    values = [i for i in context.values()]
 
     for field in fields:
         if field in context:
@@ -365,11 +364,13 @@ def generate_doc(user_id, request,surname):
         )
     response['Content-Disposition'] = f"attachment; filename*=UTF-8''{quoted_filename}_{quoted_surname}.docx"
 
-    GeneratedDocument.objects.create(
-        user_id = user_id,
-        template_name = template_file,
-        file = template_file
-    )
+    redis_client.save_progress(user_id,template_file, template_file)
+
+    # GeneratedDocument.objects.create(
+    #     user_id = user_id,
+    #     template_name = template_file,
+    #     file = template_file
+    # )
 
     return response
     
@@ -432,7 +433,11 @@ def success(request, username,user_id):
     
     add = []
 
-    history = GeneratedDocument.objects.filter(user_id=user_id).order_by('-created_at')
+    
+
+    history = redis_client.load_progress(user_id)
+
+    # history = GeneratedDocument.objects.filter(user_id=user_id).order_by('-created_at')
     
     folder_path = os.path.join('main', 'templates', 'documents')
     files = os.listdir(folder_path)
@@ -561,6 +566,7 @@ def success(request, username,user_id):
     lack_data1 = request.session.pop('lack_data', [])
     if not lack_data1:
         lack_data1 = []
+
     form_data_from_session = request.session.pop('form_data', None)
     if form_data_from_session:
         form_data = form_data_from_session
@@ -630,17 +636,24 @@ def generate_doc_with_context(template_file, context,user_id,surname):
     response['Content-Disposition'] = f"attachment; filename*=UTF-8''{quoted_filename}_{quoted_surname}.docx"
 
 
-    GeneratedDocument.objects.create(
-        user_id = user_id,
-        template_name = template_file,
-        file = template_file
-    )
+    redis_client.save_progress(user_id,template_file, template_file)
 
     return response
 
 
-def delete_history(request,user_id,username):
-    GeneratedDocument.objects.filter(user_id=user_id).delete()
+def delete_history(request, user_id, username):
+
+    history_key = f"user_progress_history:{user_id}"
+    
+    # Получаем все ключи записей истории
+    record_keys = redis_client.client.lrange(history_key, 0, -1)
+    
+    if record_keys:
+        # Удаляем сами записи
+        redis_client.client.delete(*record_keys)
+
+    redis_client.client.delete(history_key)
+
     messages.success(request, 'История документов успешно очищена.')
     return redirect('success', username=username, user_id=user_id)
     

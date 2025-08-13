@@ -145,7 +145,7 @@
                     {% for doc in history %}
                     <tr>
                         <td>{{ doc.template_name }}</td>
-                        <td style="padding: 6px 8px; color: #666;">{{ doc.created_at|date:"Y-m-d" }}</td>
+                        <td style="padding: 6px 8px; color: #666;">{{ doc.date }}</td>
                         <td>
                             <a href="{{ doc.file.url }}" download class="download-btn">
                                 📄
