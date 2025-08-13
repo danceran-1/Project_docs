@@ -3,6 +3,22 @@
 <html>
 <head>
     <link rel="stylesheet" href="{% static 'main/css/success.css' %}">
+    <script>
+        // Немедленно применяем сохраненную тему (без ошибок до загрузки body)
+        (function() {
+            const saved = localStorage.getItem('theme') || 'light';
+            // Сначала применяем к html, чтобы минимизировать мерцание темы
+            document.documentElement.classList.add(saved);
+            // Если body ещё не существует, откладываем применение
+            if (document.body) {
+                document.body.classList.add(saved);
+            } else {
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.body.classList.add(saved);
+                });
+            }
+        })();
+    </script>
 </head>
 <body data-show-consent-modal="{{ show_consent_modal|yesno:'true,false' }}">
     <div class="theme-toggle">

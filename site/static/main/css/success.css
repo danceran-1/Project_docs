@@ -188,6 +188,12 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
+/* Предотвращение мерцания при загрузке */
+html {
+    visibility: visible;
+    opacity: 1;
+}
+
 body.light {
     background: linear-gradient(120deg, #1677c3 0%, #5ec6fa 100%);
     color: #000;
@@ -811,32 +817,70 @@ body.dark .swal2-toast .swal2-icon.swal2-info {
     color: #5ab0ff !important;
 }
 
-/* Иконка Success - ОСОБЫЕ СТИЛИ */
+/* Иконка Success - УПРОЩЕННЫЕ СТИЛИ */
 .swal2-toast .swal2-icon.swal2-success {
-    border: none !important;
+    border: 2px solid #4CAF50 !important;
+    color: #4CAF50 !important;
     background: transparent !important;
 }
 
-.swal2-toast .swal2-icon.swal2-success .swal2-success-ring {
-    border: 2px solid #4CAF50 !important;
-    border-radius: 50% !important;
-    animation: none !important;
+body.dark .swal2-toast .swal2-icon.swal2-success {
+    border-color: #4CAF50 !important;
+    color: #4CAF50 !important;
 }
 
-.swal2-toast .swal2-icon.swal2-success .swal2-success-line {
-    background-color: #4CAF50 !important;
-}
-
-/* Полностью скрываем проблемный элемент */
-.swal2-toast .swal2-icon.swal2-success .swal2-success-fix,
-.swal2-success-fix {
+/* Дополнительные стили для предотвращения проблем с темой */
+.swal2-toast .swal2-icon.swal2-success .swal2-success-ring,
+.swal2-toast .swal2-icon.swal2-success .swal2-success-line,
+.swal2-toast .swal2-icon.swal2-success .swal2-success-fix {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
-    width: 0 !important;
-    height: 0 !important;
-    position: absolute !important;
-    left: -9999px !important;
+}
+
+/* Принудительное применение стилей для success иконки */
+.swal2-toast .swal2-icon.swal2-success {
+    border: 2px solid #4CAF50 !important;
+    color: #4CAF50 !important;
+    background: transparent !important;
+}
+
+/* Убеждаемся, что в темной теме иконка выглядит правильно */
+body.dark .swal2-toast .swal2-icon.swal2-success,
+.dark .swal2-toast .swal2-icon.swal2-success,
+html.dark .swal2-toast .swal2-icon.swal2-success {
+    border-color: #4CAF50 !important;
+    color: #4CAF50 !important;
+    background: transparent !important;
+}
+
+/* Дополнительные стили для темной темы уведомлений */
+body.dark .swal2-toast,
+html.dark .swal2-toast {
+    background-color: #2a2a2a !important;
+    color: #fff !important;
+    border: 1px solid #555 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+}
+
+/* Убираем проблемные элементы success иконки */
+.swal2-toast .swal2-icon.swal2-success .swal2-success-ring,
+.swal2-toast .swal2-icon.swal2-success .swal2-success-line,
+.swal2-toast .swal2-icon.swal2-success .swal2-success-fix {
+    display: none !important;
+}
+
+/* Приводим половинки круга success-иконки к цвету текущей темы (для тостов) */
+.swal2-toast .swal2-success-circular-line-left,
+.swal2-toast .swal2-success-circular-line-right,
+.swal2-toast .swal2-success-fix {
+    background-color: #fff !important; /* светлая тема */
+}
+
+body.dark .swal2-toast .swal2-success-circular-line-left,
+body.dark .swal2-toast .swal2-success-circular-line-right,
+body.dark .swal2-toast .swal2-success-fix {
+    background-color: #2a2a2a !important; /* фон тёмного тоста */
 }
 
 /* Иконка Error */
@@ -870,6 +914,37 @@ body.dark .swal2-toast .swal2-icon.swal2-warning {
 body.dark .swal2-popup .swal2-icon {
     border-width: 2px !important;
     border-style: solid !important;
+}
+
+/* Success иконка в модальных окнах */
+.swal2-popup .swal2-icon.swal2-success {
+    border-color: #4CAF50 !important;
+    color: #4CAF50 !important;
+}
+
+body.dark .swal2-popup .swal2-icon.swal2-success {
+    border-color: #4CAF50 !important;
+    color: #4CAF50 !important;
+}
+
+/* Убираем проблемные элементы success иконки в модальных окнах */
+.swal2-popup .swal2-icon.swal2-success .swal2-success-ring,
+.swal2-popup .swal2-icon.swal2-success .swal2-success-line,
+.swal2-popup .swal2-icon.swal2-success .swal2-success-fix {
+    display: none !important;
+}
+
+/* Половинки круга success-иконки под цвет темы (для модальных) */
+.swal2-popup .swal2-success-circular-line-left,
+.swal2-popup .swal2-success-circular-line-right,
+.swal2-popup .swal2-success-fix {
+    background-color: #fff !important;
+}
+
+body.dark .swal2-popup .swal2-success-circular-line-left,
+body.dark .swal2-popup .swal2-success-circular-line-right,
+body.dark .swal2-popup .swal2-success-fix {
+    background-color: #2a2a2a !important;
 }
 
 /* Стили для модальных окон SweetAlert2 в темной теме */

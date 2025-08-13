@@ -1,10 +1,15 @@
 // Функция переключения темы
 function toggleTheme() {
     const body = document.body;
+    const root = document.documentElement;
     const current = body.classList.contains('dark') ? 'dark' : 'light';
     const newTheme = current === 'dark' ? 'light' : 'dark';
+
+    // Sync both body and html to avoid mismatched states during toasts/modals
     body.classList.remove(current);
     body.classList.add(newTheme);
+    root.classList.remove(current);
+    root.classList.add(newTheme);
     localStorage.setItem('theme', newTheme);
     updateThemeIcon(newTheme);
 }
@@ -219,28 +224,54 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Обработка системных сообщений
-    const messages = document.querySelectorAll('[data-message]');
-    messages.forEach(messageElement => {
-        const messageData = JSON.parse(messageElement.dataset.message);
-        Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: messageData.tags,
-            title: messageData.text,
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true
+    // Обработка системных сообщений - перенесена в отдельную функцию
+    // чтобы вызывать её после применения темы
+    function processSystemMessages() {
+        const messages = document.querySelectorAll('[data-message]');
+        messages.forEach(messageElement => {
+            const messageData = JSON.parse(messageElement.dataset.message);
+            // Определяем правильную иконку на основе тега сообщения
+            let icon = 'info'; // по умолчанию
+            if (messageData.tags === 'success') {
+                icon = 'success';
+            } else if (messageData.tags === 'error') {
+                icon = 'error';
+            } else if (messageData.tags === 'warning') {
+                icon = 'warning';
+            }
+            
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: icon,
+                title: messageData.text,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
         });
-    });
+    }
+    
+    // Вызываем обработку сообщений после небольшой задержки,
+    // чтобы тема успела примениться
+    setTimeout(processSystemMessages, 200);
 });
 
-// Применить сохранённую тему при загрузке
-window.addEventListener('DOMContentLoaded', () => {
+// Применить сохранённую тему при загрузке - применяем сразу
+// (тема уже применена в HTML, но обновляем иконку)
+(function() {
     const saved = localStorage.getItem('theme') || 'light';
-    document.body.classList.add(saved);
+    const body = document.body;
+    const root = document.documentElement;
+    // Normalize classes on both root and body to the saved theme
+    ['light', 'dark'].forEach(cls => {
+        root.classList.remove(cls);
+        body.classList.remove(cls);
+    });
+    root.classList.add(saved);
+    body.classList.add(saved);
     updateThemeIcon(saved);
-});
+})();
 
 // Обработка модального окна согласия
 document.addEventListener('DOMContentLoaded', function () {
