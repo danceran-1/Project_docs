@@ -8,7 +8,7 @@ urlpatterns = [
     path('',views.index),
     path('about/', views.about, name='about'),
     path('registr/', views.registr, name='registr'),
-    path('success/<str:username>/<int:user_id>/', views.success, name='success'),
+    path('success/', views.success, name='success'),
     path('captcha/', include('captcha.urls')),
     path('success1/<str:username>/<int:user_id>/', views.success1, name='success1'),
     path('media/', views.media, name='media_view'),

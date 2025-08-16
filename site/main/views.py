@@ -1,15 +1,21 @@
 from django.shortcuts import render, redirect
 
+from django.contrib.auth import get_user_model, login
+from django.views.decorators.cache import never_cache
+
 from django.core.exceptions import ValidationError
+from django.contrib.auth import authenticate, login
 from .forms import RegistrationForm, LoginForm
 from .forms import CriterionForm
 from django.conf import settings
 from django.db import connection
 from django.core.cache import cache
+from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from .models import GeneratedDocument
 from .models import UserAvatar
 import os, bcrypt,re
+from django.contrib.auth import logout
 from django_ratelimit.decorators import ratelimit
 from django.core.validators import RegexValidator
 from django.contrib.auth.password_validation import validate_password
@@ -23,6 +29,8 @@ from urllib.parse import quote
 
 from redis_db import RedisClient
 from django.http import HttpResponse
+from django.contrib.auth import get_user_model, login
+from django.contrib.auth.hashers import make_password
 from docxtpl import DocxTemplate
 from io import BytesIO
 from django.db import connection
@@ -33,54 +41,6 @@ redis_client = RedisClient()
 
 def index(request):
     return render(request, 'main/index.html')
-
-
-def password_check(request,password,loggin,spesial_password,id,is_admin):
-
-        lock_key = f'login_lock_{loggin}'
-        lock_time = cache.get(lock_key)
-        print(f"Lock time from cache: {lock_time}") 
-
-        if lock_time:
-            remaining = (lock_time - timezone.now()).seconds
-            return render(request, 'main/about.html', {
-                'form': RegistrationForm(),
-                'error_message': f"Потворите попыптку через {remaining} секунд"
-            })
-
-        fail_count = cache.get(f'login_fails_{loggin}', 0)
-
-        try:
-            hash_bytes = spesial_password.encode('utf-8')
-                
-            if bcrypt.checkpw(password.encode('utf-8'), hash_bytes):
-                    success_message = f"Авторизация для {loggin} выполнена успешно"
-
-                    view_name = parsing(loggin)
-
-                    if is_admin:
-                        return redirect('success1', username = view_name,user_id = id)
-                    
-                    else:
-                        return redirect('success', username = view_name,user_id = id)
-
-
-            else:
-                    
-                    fail_count += 1
-                    cache.set(f'login_fails_{loggin}', fail_count, timeout=300)
-
-                    if fail_count > 4:
-                        cache.set(lock_key, timezone.now() + timezone.timedelta(minutes=2), timeout=120)
-
-                    error_message = 'Неверный пароль'
-                    return render(request, 'main/about.html',
-                            {'form': RegistrationForm(), 'error_message': error_message})
-                
-        except Exception as e:
-                error_message = 'Ошибка аутентификации'
-                return render(request, 'main/about.html',
-                           {'form': RegistrationForm(), 'error_message': error_message})
 
 
 def validation(username):
@@ -94,16 +54,76 @@ def validation(username):
         return None
     except ValidationError:
         return 'Username contains forbidden characters!'
+
+def password_check(request, password, loggin, spesial_password, user_id, is_admin):
+    lock_key = f'login_lock_{loggin}'
+    lock_time = cache.get(lock_key)
+
+    if lock_time:
+        remaining = (lock_time - timezone.now()).seconds
+        return render(request, 'main/about.html', {
+            'form': RegistrationForm(),
+            'error_message': f"Потворите попытку через {remaining} секунд"
+        })
+
+    fail_count = cache.get(f'login_fails_{loggin}', 0)
+
+    try:
+        hash_bytes = spesial_password.encode('utf-8')
+
+        if bcrypt.checkpw(password.encode('utf-8'), hash_bytes):
+
+            User = get_user_model()
+            logout(request)
+            user, created = User.objects.get_or_create(username=loggin)
+
+            if created:
+                user.password = make_password(password)
+                user.save()
+
+            # логиним в Django
+            login(request, user)
+            request.session['custom_user_id'] = user_id
+            request.session.modified = True
+
+            if is_admin:
+                return redirect('success1')
+            else:
+                return redirect('success')
+
+        else:
+            fail_count += 1
+            cache.set(f'login_fails_{loggin}', fail_count, timeout=300)
+
+            if fail_count > 4:
+                cache.set(lock_key, timezone.now() + timezone.timedelta(minutes=2), timeout=120)
+
+            error_message = 'Неверный пароль'
+            return render(request, 'main/about.html',
+                          {'form': RegistrationForm(), 'error_message': error_message})
+
+    except Exception:
+        error_message = 'Ошибка аутентификации'
+        return render(request, 'main/about.html',
+                      {'form': RegistrationForm(), 'error_message': error_message})
+
+
+
     
     
 # @ratelimit(key='ip', rate='8/m',block=True)
+
+@never_cache
 def about(request):
     """Авторизация"""
+
     if request.method == 'POST':
        
         username = request.POST.get('username')
         password = request.POST.get('password')
         ip = request.META.get('REMOTE_ADDR')    
+
+        user = authenticate(request, username=username, password=password)
 
 
         ip_fail_key = f'login_fails_ip_{ip}'
@@ -162,6 +182,8 @@ def about(request):
     else:
         return render(request, 'main/about.html', {'form': RegistrationForm()})
 
+
+@never_cache
 def registr(request):
     error_message = None
     
@@ -218,14 +240,28 @@ def registr(request):
 
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "SELECT id FROM users WHERE name = %s",
+                    "SELECT id,name FROM users WHERE name = %s",
                     [username]
                 )
                 user_id = cursor.fetchone()
 
             view_name = parsing(username)
             print(parsing(username))
-            return redirect('success', username=view_name,user_id = user_id[0])
+
+            User = get_user_model()
+
+            user, created = User.objects.get_or_create(username=user_id[1])
+
+            if created:
+                # задаём пароль в формате Django (чтобы работало authenticate)
+                user.password = make_password(password)
+                user.save()
+
+            # логиним в Django
+            login(request, user)
+            print(user_id[0])
+            request.session['custom_user_id'] = user_id[0]
+            return redirect('success')
         
         except Exception as e:
             error_message = f"Ошибка при регистрации: {str(e)}"
@@ -265,7 +301,7 @@ def check_personal_data(user_id,request):
 
         if not is_data:
             messages.error(request, "Нет данных для генерации документа.")
-            return redirect('success', username=request.user.username, user_id=user_id)
+            return redirect('success')
         
     name = is_data[1]
     surname = is_data[2]
@@ -421,8 +457,14 @@ def check_accept(user_id):
     
 
 
-def success(request, username,user_id):
+def success(request):
     
+    user_id = request.session.get('custom_user_id')
+    username = request.user
+
+    if not user_id:
+        return redirect('about')
+
     form_data = {
             'first_name': '',
             'last_name': '',
@@ -433,21 +475,20 @@ def success(request, username,user_id):
     
     add = []
 
-    
-
     history = redis_client.load_progress(user_id)
 
     # history = GeneratedDocument.objects.filter(user_id=user_id).order_by('-created_at')
-    
+    # читаем шаблоны
     folder_path = os.path.join('main', 'templates', 'documents')
     files = os.listdir(folder_path)
     templates = [f for f in files if f.endswith('.docx')]
     
+    # проверка согласия, нужно доробатть 2
     accept_given = check_accept(user_id)
     print(accept_given,"Accept")
 
     avatar_file = request.FILES.get('avatar')
-
+    # основная инфа
     info_personal = get_data(user_id)
     surname = info_personal['last_name']
 
@@ -464,15 +505,18 @@ def success(request, username,user_id):
         if avatar and avatar.avatar:
             avatar_url = avatar.avatar.url
 
+
+        # отчищаем историю редис
         if 'clear_history' in request.POST:
             return delete_history(request,user_id,username)
 
+        # создания документа с пропусками
         if 'generate_doc_with_missing' in request.POST:
             template_file = request.POST.get('template')
             print(template_file,"ФАЙЛ")
             if not template_file:
                 messages.error(request, "Не выбран шаблон документа.")
-                return redirect('success', username=username, user_id=user_id)
+                return redirect('success')
             
             context = check_personal_data(user_id, request)
             for key in request.POST:
@@ -487,7 +531,9 @@ def success(request, username,user_id):
 
             write_accept(user_id, request)
             messages.success(request, 'Согласие сохранено')
-            return redirect('success', username=username, user_id=user_id) 
+            return redirect('success') 
+        elif 'refusal-consent' in request.POST:
+            return redirect('about')
 
         # создание доков
         if 'generate_doc_btn' in request.POST:
@@ -503,7 +549,7 @@ def success(request, username,user_id):
                     request.session['template_file'] = template_file
                     request.session['lack_data'] = add
                     request.session['form_data'] = info_personal
-                    return redirect('success', username=username, user_id=user_id)
+                    return redirect('success')
                 
                 
             
@@ -519,7 +565,7 @@ def success(request, username,user_id):
         city = request.POST.get('city', '').strip()
 
                 
-
+        # есть ли данныеЮ, если есть обновляем, нет - заполняем
         with connection.cursor() as cursor:
             cursor.execute(
                 "SELECT * FROM personal_data WHERE user_id = %s",
@@ -590,6 +636,7 @@ def success(request, username,user_id):
 
 
 def get_data(user_id):
+    """Персональная информация"""
 
     form_data = {
         'first_name': '',
@@ -616,6 +663,7 @@ def get_data(user_id):
     return form_data
 
 def generate_doc_with_context(template_file, context,user_id,surname):
+
     path = f"main/templates/documents/{template_file}"
     doc = DocxTemplate(path)
     file_stream = BytesIO()
@@ -655,7 +703,7 @@ def delete_history(request, user_id, username):
     redis_client.client.delete(history_key)
 
     messages.success(request, 'История документов успешно очищена.')
-    return redirect('success', username=username, user_id=user_id)
+    return redirect('success')
     
 
 def success1(request,username,user_id):
@@ -675,7 +723,7 @@ def success1(request,username,user_id):
             )
 
         
-    return render(request, 'main/success.html',{'username':username},{'user_id':user_id})
+    return render(request, 'main/success.html')
 
         
 

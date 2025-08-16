@@ -44,6 +44,11 @@ VALUES
 CREATE INDEX idx_users_username ON users(name);
 CREATE INDEX idx_users_role  ON users(user_password);
 
+#удаление
+
+DELETE FROM users;
+DELETE FROM personal_data;
+DELETE FROM personal_data_agreement;
 
 
 CREATE TABLE personal_data(

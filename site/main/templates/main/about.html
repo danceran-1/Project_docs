@@ -36,7 +36,8 @@
                     {% csrf_token %}
                     <!-- Поле Email -->
                     <div class="input-group">
-                        <input type="email" id="username" name="username" class="input-field" placeholder="Электронная почта" required value="{{ request.POST.email|default:'' }}">
+                        <input type="email" id="username" name="username" class="input-field" placeholder="Электронная почта" required>
+
                     </div>
                     
                     <!-- Поле Пароль -->

@@ -105,7 +105,7 @@
             <!-- Модальное окно -->
             <div id="consent-modal" class="modal" {% if show_consent_modal %}style="display: block;"{% endif %}>
                 <div class="modal-content">
-                    <span class="close" id="close-modal">&times;</span>
+                    <!-- <span class="close" id="close-modal">&times;</span> -->
                     <h2>Согласие на обработку персональных данных</h2>
                     <p>
                     Я,{{form_data.last_name}} {{ form_data.first_name }} {{form_data.middle_name}}, подтверждаю своё согласие на обработку моих персональных данных в соответствии с Федеральным законом №152-ФЗ.
@@ -114,6 +114,7 @@
                     <form method="POST" id="consent-form">
                         {% csrf_token %}
                         <button type="submit" name="accept-consent" class="edit-btn" id="accept-consent">Принять</button>
+                        <button type="submit" name="refusal-consent" class="edit-btn" id="refusal-consent">Отказаться</button>
                     </form>
                 </div>
             </div>

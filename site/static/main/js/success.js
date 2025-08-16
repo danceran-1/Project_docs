@@ -31,12 +31,12 @@ function closeModal() {
 }
 
 // Закрытие модального окна при клике вне его
-window.onclick = function(event) {
-    const modal = document.getElementById('docModal');
-    if (event.target == modal) {
-        closeModal();
-    }
-}
+// window.onclick = function(event) {
+//     const modal = document.getElementById('docModal');
+//     if (event.target == modal) {
+//         closeModal();
+//     }
+// }
 
 // Показать предупреждение о редактировании
 function showEditWarning() {
@@ -284,18 +284,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (saveBtn) {
         saveBtn.addEventListener('click', function (e) {
             if (shouldShowConsentModal) {
-                e.preventDefault(); // отменяем стандартное поведение (отправку формы)
-                consentModal.style.display = 'block'; // показываем модальное окно с согласием
+                e.preventDefault();
+                consentModal.style.display = 'block';
             }
-            // иначе форма отправится сразу
-        });
-    }
-
-    // Обработчик закрытия модалки
-    const closeModalBtn = document.getElementById('close-modal');
-    if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', function () {
-            consentModal.style.display = 'none';
         });
     }
 
@@ -308,12 +299,24 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Закрыть модалку при клике вне её
-    if (consentModal) {
-        window.addEventListener('click', function (e) {
-            if (e.target === consentModal) {
-                consentModal.style.display = 'none';
-            }
+    // Если пользователь нажал "Отказаться"
+    const refusalConsentBtn = document.getElementById('refusal-consent');
+    if (refusalConsentBtn) {
+        refusalConsentBtn.addEventListener('click', function () {
+            consentModal.style.display = 'none';
+            document.getElementById('consent-form').submit();
         });
     }
+
+    // Оставляем возможность закрытия других модалок кликом вне,
+    // но для consentModal игнорируем клики вне
+    const otherModals = document.querySelectorAll('.modal:not(#consent-modal)');
+    otherModals.forEach(function(modal) {
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
 });
+
