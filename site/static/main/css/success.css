@@ -244,6 +244,7 @@ body.dark .passport-fields label {
     top: -150px;
     margin-top: 0;
     right: -120px;
+    margin-right: 300px;
 }
 
 .hint-block-title {
@@ -633,6 +634,7 @@ body.dark .modal-content {
 @media (max-width: 900px) {
     .main-wrapper { 
         flex-direction: column; 
+        
     }
     .hint-block { 
         margin: 0 0 32px 0; 
@@ -982,3 +984,99 @@ body.dark .swal2-popup .swal2-cancel {
 }
 
 
+/* Контейнер для таблицы истории с ограничением по высоте */
+.history-table-wrapper {
+    max-height: 180px; /* примерно 3 строки */
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+/* Чтобы заголовок таблицы всегда оставался сверху */
+.history-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f7f9fa;
+}
+
+body.dark .history-table thead {
+    background: #444;
+}
+/* История документов (фиксировано на месте + шире) */
+.history-section {
+    margin-top: 15px !important;
+    width: 90%; /* делаем шире относительно контейнера */
+    max-width: 450px; /* но ограничим, чтобы не расползалось */
+    margin-left: auto;
+    margin-right: auto;
+    position: relative; /* фиксируем место */
+    left: 100px;
+}
+
+/* Обёртка таблицы */
+.history-table-wrapper {
+    max-height: 135px; /* уменьшено на 25% (высота) */
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Таблица */
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.history-table th, 
+.history-table td {
+    padding: 8px 10px !important;
+    border-bottom: 1px solid #eee;
+    border-right: 1px solid #eee; /* вертикальные линии */
+}
+
+/* убираем лишнюю правую границу у последней колонки */
+.history-table th:last-child,
+.history-table td:last-child {
+    border-right: none;
+}
+
+
+/* Сообщение "Документов пока нет" */
+.empty-message {
+    padding: 40px 0 !important;
+    font-size: 0.95em;
+}
+
+/* Кнопка очистки истории */
+.clear-history-btn {
+    margin-top: 8px !important;
+    text-align: right;
+}
+
+.clear-history-btn button {
+    padding: 5px 10px !important;
+    border-radius: 5px;
+    font-size: 0.85em;
+}
+
+/* ================= ТЕМНАЯ ТЕМА ================= */
+body.dark .history-table-wrapper {
+    background: #2a2a2a;
+    border-color: #555;
+}
+
+body.dark .history-table th, 
+body.dark .history-table td {
+    border-bottom: 1px solid #555;
+    border-right: 1px solid #555;
+    color: #ddd;
+}
+
+body.dark .history-table th:last-child,
+body.dark .history-table td:last-child {
+    border-right: none;
+}

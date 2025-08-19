@@ -1,43 +1,45 @@
 from django.shortcuts import render, redirect
-
 from django.contrib.auth import get_user_model, login
 from django.views.decorators.cache import never_cache
-
+from django.db import transaction
+from django.http import HttpResponse
+from django.contrib.auth.hashers import make_password
+from django.db import connection
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate, login
-from .forms import RegistrationForm, LoginForm
-from .forms import CriterionForm
+
 from django.conf import settings
 from django.db import connection
 from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-from .models import GeneratedDocument
-from .models import UserAvatar
-import os, bcrypt,re
 from django.contrib.auth import logout
 from django_ratelimit.decorators import ratelimit
 from django.core.validators import RegexValidator
 from django.contrib.auth.password_validation import validate_password
 from django.contrib import messages
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+
+from .forms import RegistrationForm, LoginForm
+from .forms import CriterionForm
+
+from .models import GeneratedDocument
+from .models import UserAvatar
 from .models import City
 
+import os, bcrypt,re
 from datetime import date
 from docxtpl import DocxTemplate
 from urllib.parse import quote
-
 from redis_db import RedisClient
-from django.http import HttpResponse
-from django.contrib.auth import get_user_model, login
-from django.contrib.auth.hashers import make_password
 from docxtpl import DocxTemplate
 from io import BytesIO
-from django.db import connection
-
 from docx import Document
 
+
 redis_client = RedisClient()
+
 
 def index(request):
     return render(request, 'main/index.html')
@@ -75,21 +77,21 @@ def password_check(request, password, loggin, spesial_password, user_id, is_admi
 
             User = get_user_model()
             logout(request)
-            user, created = User.objects.get_or_create(username=loggin)
+            request.session.flush()  # полностью очищает старую сессию
 
+            user, created = User.objects.get_or_create(username=loggin)
             if created:
                 user.password = make_password(password)
                 user.save()
 
-            # логиним в Django
             login(request, user)
-            request.session['custom_user_id'] = user_id
-            request.session.modified = True
 
-            if is_admin:
-                return redirect('success1')
-            else:
-                return redirect('success')
+            request.session['custom_user_id'] = user.id
+            request.session['just_logged_in'] = True 
+
+            print(user.id,"Айди")
+
+            return redirect('success1' if is_admin else 'success')
 
         else:
             fail_count += 1
@@ -108,9 +110,7 @@ def password_check(request, password, loggin, spesial_password, user_id, is_admi
                       {'form': RegistrationForm(), 'error_message': error_message})
 
 
-
-    
-    
+  
 # @ratelimit(key='ip', rate='8/m',block=True)
 
 @never_cache
@@ -226,42 +226,43 @@ def registr(request):
                         {'error_message':error_message})
 
         try:
-            salt = bcrypt.gensalt()
-            hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-            hashed_password_str = hashed_password.decode('utf-8')
+            with transaction.atomic():
+                salt = bcrypt.gensalt()
+                hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+                hashed_password_str = hashed_password.decode('utf-8')
 
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "INSERT INTO users (name, user_password) VALUES (%s, %s)",
+                        [username, hashed_password_str]
+                    )
+                    
 
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    "INSERT INTO users (name, user_password) VALUES (%s, %s)",
-                    [username, hashed_password_str]
-                )
-                
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "SELECT id,name FROM users WHERE name = %s",
+                        [username]
+                    )
+                    user_id = cursor.fetchone()
 
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    "SELECT id,name FROM users WHERE name = %s",
-                    [username]
-                )
-                user_id = cursor.fetchone()
+                view_name = parsing(username)
+                print(parsing(username))
 
-            view_name = parsing(username)
-            print(parsing(username))
+                User = get_user_model()
 
-            User = get_user_model()
+                user, created = User.objects.get_or_create(username=user_id[1])
 
-            user, created = User.objects.get_or_create(username=user_id[1])
+                if created:
+                    # задаём пароль в формате Django (чтобы работало authenticate)
+                    user.password = make_password(password)
+                    user.save()
 
-            if created:
-                # задаём пароль в формате Django (чтобы работало authenticate)
-                user.password = make_password(password)
-                user.save()
-
-            # логиним в Django
-            login(request, user)
-            print(user_id[0])
-            request.session['custom_user_id'] = user_id[0]
-            return redirect('success')
+                logout(request)
+                # логиним в Django
+                login(request, user)
+                print(user_id[0])
+                request.session['custom_user_id'] = user_id[0]
+                return redirect('success')
         
         except Exception as e:
             error_message = f"Ошибка при регистрации: {str(e)}"
@@ -291,7 +292,7 @@ def city_autocomplete(request):
         results = []
     return JsonResponse(results, safe=False)
 
-
+# класс processing_data
 def check_personal_data(user_id,request):
 
 
@@ -409,7 +410,7 @@ def generate_doc(user_id, request,surname):
     # )
 
     return response
-    
+# конец processing_data
 
 
 def get_client_ip(request):
@@ -421,26 +422,29 @@ def get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
+# класс accept
 def write_accept(user_id,request):
 
 
     ip_address = get_client_ip(request)
     user_agent = request.META.get('HTTP_USER_AGENT', '')
 
-    with connection.cursor() as cursor:
-        cursor.execute(
-        "SELECT * FROM personal_data_agreement WHERE user_id = %s",
-        [user_id]
-        )
-
-        is_data = cursor.fetchone()
-
-    if not is_data:
+    with transaction.atomic():
         with connection.cursor() as cursor:
             cursor.execute(
-            "INSERT INTO personal_data_agreement (user_id,agreed_at,ip_address, user_agent) VALUES (%s,NOW(),%s,%s) ",
-            [user_id,ip_address,user_agent]
+            "SELECT * FROM personal_data_agreement WHERE user_id = %s",
+            [user_id]
             )
+
+            is_data = cursor.fetchone()
+
+        if not is_data:
+            
+            with connection.cursor() as cursor:
+                cursor.execute(
+                "INSERT INTO personal_data_agreement (user_id,agreed_at,ip_address, user_agent) VALUES (%s,NOW(),%s,%s) ",
+                [user_id,ip_address,user_agent]
+                )
 
 def check_accept(user_id):
 
@@ -454,12 +458,25 @@ def check_accept(user_id):
     if is_data:
         return True
     return False
-    
+# конец класса
 
-
+@never_cache
+@login_required(login_url='registr')
 def success(request):
     
-    user_id = request.session.get('custom_user_id')
+    print('auth?', request.user.is_authenticated, 'user.id', request.user.id, 'sess', request.session.get('custom_user_id'))
+
+    if not request.session.get('just_logged_in'):
+        return redirect('registr')
+
+    request.session.pop('just_logged_in', None)
+
+    if request.session.get('custom_user_id') != request.user.id:
+        logout(request)
+        request.session.flush()
+        return redirect('registr')
+
+    user_id = request.user.id
     username = request.user
 
     if not user_id:
@@ -540,7 +557,7 @@ def success(request):
             
             # проверка на заполненность доков
             if 'download_doc' in request.POST:
-                print("ЕЕЕБОЙ")
+
                 add = lack_data(user_id,request)
                 print(add,"Не хвататет")
                 if add:
@@ -566,26 +583,27 @@ def success(request):
 
                 
         # есть ли данныеЮ, если есть обновляем, нет - заполняем
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT * FROM personal_data WHERE user_id = %s",
-                [user_id]
-                )
-            is_data = cursor.fetchone()
-
-        if is_data:
-                with connection.cursor() as cursor:
-                    cursor.execute("""
-                        UPDATE personal_data SET name = %s, surname = %s, last_name = %s, dob = %s, sity = %s 
-                        WHERE user_id = %s""", [first_name, last_name, middle_name, birth_date, city, user_id])
-
-        # сохранение данных      
-        else:
+        with transaction.atomic():
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO personal_data (user_id, name,surname,last_name,dob,sity) VALUES (%s, %s,%s,%s,%s,%s)",
-                    [user_id,last_name,first_name,middle_name,birth_date,city]
+                    "SELECT * FROM personal_data WHERE user_id = %s",
+                    [user_id]
                     )
+                is_data = cursor.fetchone()
+
+            if is_data:
+                    with connection.cursor() as cursor:
+                        cursor.execute("""
+                            UPDATE personal_data SET name = %s, surname = %s, last_name = %s, dob = %s, sity = %s 
+                            WHERE user_id = %s""", [first_name, last_name, middle_name, birth_date, city, user_id])
+
+            # сохранение данных      
+            else:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "INSERT INTO personal_data (user_id, name,surname,last_name,dob,sity) VALUES (%s, %s,%s,%s,%s,%s)",
+                        [user_id,last_name,first_name,middle_name,birth_date,city]
+                        )
                 
         form_data = {
             'first_name': first_name,
