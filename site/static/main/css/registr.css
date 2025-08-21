@@ -1,0 +1,188 @@
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    width: 100vw;
+    background: url("../img/BackroundRegistration.png") no-repeat center center fixed;
+    background-size: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes moveBackground {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 1000px 1000px; /* смещение по x и y */
+    }
+}
+
+.register-window {
+    position: relative;
+    width: 420px;
+    min-height: 540px; /* было height: 540px; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-bottom: 30px; /* добавлен отступ снизу */
+}
+
+.register-window-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    border-radius: 22px;
+}
+
+.register-logo-img {
+    position: relative;
+    z-index: 2;
+    width: 80px;
+    height: 110px;
+    margin-top: 38px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.register-title {
+    position: relative;
+    z-index: 2;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 28px;
+    color: #1976d2;
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.gradient-title {
+    background: linear-gradient(90deg, #0060B9 0%, #002B53 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.register-form {
+    position: relative;
+    z-index: 2;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    margin: 0 auto;
+}
+
+.password-field {
+    position: relative;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.register-input {
+    width: 100%;
+    padding: 10px 0 8px 0;
+    border: none;
+    border-bottom: 2px solid #1976d2;
+    background: transparent;
+    font-size: 17px;
+    color: #222;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+/* Для поля с глазиком делаем input короче */
+.password-field .register-input {
+    width: calc(100% - 40px);
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    z-index: 2;
+    border-bottom: none;
+}
+
+.toggle-pass {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    z-index: 3;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.toggle-pass:hover {
+    opacity: 1;
+}
+
+.input-underline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: #1976d2;
+    z-index: 1;
+    border-radius: 1px;
+    transition: background 0.2s, height 0.2s;
+}
+
+.password-field .register-input:focus ~ .input-underline {
+    background: #1565c0;
+    height: 2.5px;
+}
+
+.register-btn {
+    width: 100%;
+    padding: 15px 0;
+    background: #42a5f5;
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 18px;
+    transition: background 0.2s;
+    box-shadow: 0 2px 8px rgba(66,165,245,0.10);
+}
+
+.register-btn:hover {
+    background: #1976d2;
+}
+
+.register-window.error-active {
+    /* height: 600px;  <-- удалено */
+    transition: height 0.3s;
+}
+
+.register-form.error-active {
+    /* margin-top: 30px; */
+    transition: margin-top 0.3s;
+}
+
+.error-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.error-message {
+    color: red;
+    font-size: 20px;
+    text-align: center;
+    font-weight: 500;
+}

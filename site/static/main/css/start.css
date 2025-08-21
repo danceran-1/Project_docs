@@ -6,7 +6,7 @@
 }
 
 body {
-    background: #1C5583;
+    background: linear-gradient(to top, #0F3A55 0%, #2D6B94 50%, #4A92B8 100%);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
@@ -31,47 +31,52 @@ body {
     animation-duration: 20s;
     animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
     animation-iteration-count: infinite;
+    animation-play-state: running;
     will-change: transform;
 }
 
 .bg-file {
     top: 25%;
     left: 5%;
-    width: 120px;
+    width: 240px;
     height: auto;
     animation-name: floatFile;
     animation-duration: 15s;
     animation-delay: 0s;
+    animation-play-state: running;
 }
 
 .bg-bd {
     top: 15%;
     right: 8%;
-    width: 100px;
+    width: 200px;
     height: auto;
     animation-name: floatBD;
     animation-duration: 18s;
     animation-delay: 2s;
+    animation-play-state: running;
 }
 
 .bg-install {
     bottom: 10%;
     left: 8%;
-    width: 110px;
+    width: 220px;
     height: auto;
     animation-name: floatInstall;
     animation-duration: 22s;
     animation-delay: 4s;
+    animation-play-state: running;
 }
 
 .bg-lock {
     bottom: 10%;
     right: 5%;
-    width: 130px;
+    width: 260px;
     height: auto;
     animation-name: floatLock;
     animation-duration: 20s;
     animation-delay: 6s;
+    animation-play-state: running;
 }
 
 /* Анимации для фоновых элементов */
@@ -198,6 +203,158 @@ body {
     letter-spacing: 0.5px;
 }
 
+/* Контейнер для анимации слогана */
+.tagline-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 40px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.tagline-container:hover {
+    transform: scale(1.02);
+}
+
+.tagline-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.cursor-animation {
+    position: absolute;
+    z-index: 10;
+    pointer-events: none;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.cursor-img {
+    width: 24px;
+    height: 24px;
+    transition: all 0.8s ease;
+    opacity: 0;
+    transform: translateY(50px);
+}
+
+.words-container {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.word {
+    color: white;
+    font-size: 28px;
+    font-weight: 400;
+    opacity: 0;
+    transition: all 0.5s ease;
+    position: relative;
+    transform: translateX(0);
+    white-space: nowrap;
+}
+
+.save-icon {
+    position: absolute;
+    right: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    pointer-events: none;
+}
+
+.save-img {
+    width: 32px;
+    height: 32px;
+    opacity: 0;
+    transition: all 0.5s ease;
+}
+
+/* Состояния анимации */
+.cursor-img.visible {
+    opacity: 1;
+}
+
+.word.visible {
+    opacity: 1;
+}
+
+.save-img.visible {
+    opacity: 1;
+}
+
+/* Позиции курсора для разных слов */
+.cursor-img.position-word1 {
+    transform: translateX(-120px) translateY(8px);
+}
+
+.cursor-img.position-word2 {
+    transform: translateX(0px) translateY(8px);
+}
+
+.cursor-img.position-word3 {
+    transform: translateX(120px) translateY(8px);
+}
+
+.cursor-img.position-save {
+    transform: translateX(140px) translateY(8px);
+}
+
+.cursor-img.position-start {
+    transform: translateX(0px) translateY(50px);
+}
+
+/* Анимация печати */
+.word.typing {
+    position: relative;
+}
+
+.word.typing::after {
+    content: '';
+    display: inline-block;
+    width: 2px;
+    height: 28px;
+    background: white;
+    animation: blink 0.7s infinite;
+    margin-left: 2px;
+    vertical-align: middle;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* Анимация перемещения слова */
+.word.moving {
+    transition: transform 1s ease-in-out;
+}
+
+.word.initial-position {
+    transform: translateX(50px);
+}
+
+/* Курсор, который движется вместе со словом */
+.cursor-img.moving-with-word {
+    transition: transform 1s ease-in-out;
+}
+
+.cursor-img.moving-with-word.position-word2 {
+    transform: translateX(-50px) translateY(8px);
+}
+
 /* Секция функций */
 .features-section {
     display: flex;
@@ -268,12 +425,12 @@ body {
 .feature:hover .tooltip-popup {
     opacity: 1;
     visibility: visible;
-    transform: translateX(-50%) translateY(-120%);
+    transform: translateX(-50%) translateY(-100%);
     pointer-events: auto;
 }
 
 .tooltip-content {
-    background: rgba(28, 85, 131, 0.95);
+    background: linear-gradient(135deg, #316F99 0%, #438AB1 100%);
     backdrop-filter: blur(15px);
     border: 2px solid rgba(125, 190, 239, 0.3);
     border-radius: 15px;
@@ -291,7 +448,7 @@ body {
     left: 50%;
     transform: translateX(-50%);
     border: 10px solid transparent;
-    border-top-color: rgba(28, 85, 131, 0.95);
+    border-top-color: #316F99;
     border-bottom: none;
 }
 
@@ -474,6 +631,41 @@ body {
         font-size: 24px;
     }
     
+    /* Адаптация анимации для мобильных */
+    .cursor-img {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .word {
+        font-size: 24px;
+    }
+    
+    .save-img {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .save-icon {
+        right: -35px;
+    }
+    
+    .cursor-img.position-word1 {
+        transform: translateX(-100px) translateY(6px);
+    }
+    
+    .cursor-img.position-word2 {
+        transform: translateX(0px) translateY(6px);
+    }
+    
+    .cursor-img.position-word3 {
+        transform: translateX(100px) translateY(6px);
+    }
+    
+    .cursor-img.position-save {
+        transform: translateX(130px) translateY(6px);
+    }
+    
     .logo {
         width: 60px;
         height: 60px;
@@ -556,6 +748,41 @@ body {
     
     .tagline {
         font-size: 20px;
+    }
+    
+    /* Адаптация анимации для маленьких экранов */
+    .cursor-img {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .word {
+        font-size: 20px;
+    }
+    
+    .save-img {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .save-icon {
+        right: -30px;
+    }
+    
+    .cursor-img.position-word1 {
+        transform: translateX(-80px) translateY(4px);
+    }
+    
+    .cursor-img.position-word2 {
+        transform: translateX(0px) translateY(4px);
+    }
+    
+    .cursor-img.position-word3 {
+        transform: translateX(80px) translateY(4px);
+    }
+    
+    .cursor-img.position-save {
+        transform: translateX(100px) translateY(4px);
     }
     
     .logo {

@@ -261,7 +261,8 @@ def registr(request):
                 # логиним в Django
                 login(request, user)
                 print(user_id[0])
-                request.session['custom_user_id'] = user_id[0]
+                request.session['custom_user_id'] = user.id
+                request.session['just_logged_in'] = True 
                 return redirect('success')
         
         except Exception as e:
@@ -461,17 +462,16 @@ def check_accept(user_id):
 # конец класса
 
 @never_cache
-@login_required(login_url='registr')
+# @login_required(login_url='registr')
 def success(request):
     
     print('auth?', request.user.is_authenticated, 'user.id', request.user.id, 'sess', request.session.get('custom_user_id'))
 
-    if not request.session.get('just_logged_in'):
+    if not request.user.is_authenticated:
         return redirect('registr')
 
-    request.session.pop('just_logged_in', None)
-
-    if request.session.get('custom_user_id') != request.user.id:
+    sess_uid = request.session.get('custom_user_id')
+    if not sess_uid or sess_uid != request.user.id:
         logout(request)
         request.session.flush()
         return redirect('registr')

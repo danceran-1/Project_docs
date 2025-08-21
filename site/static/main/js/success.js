@@ -1,3 +1,18 @@
+// Немедленно применяем сохраненную тему (без ошибок до загрузки body)
+(function() {
+    const saved = localStorage.getItem('theme') || 'light';
+    // Сначала применяем к html, чтобы минимизировать мерцание темы
+    document.documentElement.classList.add(saved);
+    // Если body ещё не существует, откладываем применение
+    if (document.body) {
+        document.body.classList.add(saved);
+    } else {
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add(saved);
+        });
+    }
+})();
+
 // Функция переключения темы
 function toggleTheme() {
     const body = document.body;
