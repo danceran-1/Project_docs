@@ -57,6 +57,10 @@ MIDDLEWARE = [
 ]
 
 
+
+
+
+
 LOGIN_URL = 'about'          
 LOGIN_REDIRECT_URL = 'success'
 LOGOUT_REDIRECT_URL = 'index'

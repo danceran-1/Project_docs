@@ -76,8 +76,8 @@ function enableEditing() {
         input.removeAttribute('readonly');
         input.style.pointerEvents = 'auto';
     });
-            document.getElementById('edit-btn').style.display = 'none';
-        document.getElementById('save-btn').classList.remove('hidden-btn');
+    document.getElementById('edit-btn').style.display = 'none';
+    document.getElementById('save-btn').classList.remove('hidden-btn');
     document.getElementById('avatar-label').classList.remove('disabled');
     const choosePhoto = document.getElementById('choose-photo');
     if (choosePhoto) {
