@@ -169,9 +169,19 @@ body {
     align-items: center;
 }
 
+/* Для поля с глазиком делаем input короче */
+.password-container .input-field {
+    width: calc(100% - 40px);
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    z-index: 2;
+    border-bottom: none;
+}
+
 .password-toggle {
     position: absolute;
-    right: 0;
+    right: 8px;
     top: 50%;
     transform: translateY(-50%);
     background: none;
@@ -181,6 +191,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 3;
 }
 
 .toggle-icon {
@@ -192,6 +203,141 @@ body {
 
 .password-toggle:hover .toggle-icon {
     opacity: 1;
+}
+
+/* Линия под полем пароля */
+.password-container::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: #1976d2;
+    z-index: 1;
+    border-radius: 1px;
+    transition: background 0.2s, height 0.2s;
+}
+
+.password-container .input-field:focus ~ .password-toggle::after {
+    background: #1565c0;
+    height: 2.5px;
+}
+
+/* Запомнить меня */
+.remember-me-container {
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.remember-me-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    font-size: 16px;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.remember-me-label:hover {
+    color: #1976d2;
+}
+
+.remember-me-checkbox {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border: 2px solid #1976d2;
+    border-radius: 4px;
+    margin-left: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.checkmark::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    background: #1976d2;
+    border-radius: 50%;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(0);
+}
+
+.checkmark-svg {
+    width: 14px;
+    height: 14px;
+    fill: #fff;
+    z-index: 2;
+    position: relative;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.checkmark-path {
+    stroke-dasharray: 30;
+    stroke-dashoffset: 30;
+    transition: stroke-dashoffset 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.remember-me-checkbox:checked + .checkmark {
+    border-color: #1976d2;
+    background: #1976d2;
+    transform: scale(1.1);
+    box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.2);
+}
+
+.remember-me-checkbox:checked + .checkmark::before {
+    width: 100%;
+    height: 100%;
+    transform: scale(1);
+}
+
+.remember-me-checkbox:checked + .checkmark .checkmark-svg {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.remember-me-checkbox:checked + .checkmark .checkmark-path {
+    stroke-dashoffset: 0;
+}
+
+.remember-text {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 400;
+}
+
+.remember-me-checkbox:checked ~ .remember-text {
+    color: #1976d2;
+    font-weight: 600;
+}
+
+/* Анимация при наведении на галочку */
+.remember-me-label:hover .checkmark {
+    border-color: #1565c0;
+    transform: scale(1.05);
+}
+
+.remember-me-label:hover .checkmark::before {
+    background: rgba(25, 118, 210, 0.1);
+    transform: scale(0.8);
 }
 
 /* Кнопка входа */

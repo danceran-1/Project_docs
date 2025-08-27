@@ -57,7 +57,7 @@ def validation(username):
     except ValidationError:
         return 'Username contains forbidden characters!'
 
-def password_check(request, password, loggin, spesial_password, user_id, is_admin):
+def password_check(request, password, loggin, spesial_password, user_id, is_admin,is_rememberMe):
     lock_key = f'login_lock_{loggin}'
     lock_time = cache.get(lock_key)
 
@@ -85,6 +85,11 @@ def password_check(request, password, loggin, spesial_password, user_id, is_admi
                 user.save()
 
             login(request, user)
+
+            if is_rememberMe:
+                request.session.set_expiry(60 * 60 * 24 * 30)
+            else:
+                request.session.set_expiry(0)
 
             request.session['custom_user_id'] = user.id
             request.session['just_logged_in'] = True 
@@ -122,6 +127,12 @@ def about(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         ip = request.META.get('REMOTE_ADDR')    
+        
+        is_rememberMe = False
+
+        if "rememberMe" in request.POST:
+            print("работает")
+            is_rememberMe = True
 
         user = authenticate(request, username=username, password=password)
 
@@ -154,7 +165,7 @@ def about(request):
             special = cursor.fetchone()
 
             if special:
-                return password_check(request, password,special[0],special[1],special[2],True)
+                return password_check(request, password,special[0],special[1],special[2],True,is_rememberMe)
 
             # тут обычных
             cursor.execute(
@@ -164,7 +175,7 @@ def about(request):
             user_data = cursor.fetchone()
 
             if user_data:
-                return password_check(request, password,user_data[1],user_data[0],user_data[2],False)
+                return password_check(request, password,user_data[1],user_data[0],user_data[2],False,is_rememberMe)
             
             else:
                 ip_fails = cache.get(ip_fail_key, 0) + 1

@@ -1,4 +1,4 @@
-document.addEventListener('Loaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     const passwordField = document.getElementById('password');
     const passwordToggle = document.getElementById('passwordToggle');
     const toggleIcon = document.getElementById('toggleIcon');
@@ -30,13 +30,13 @@ document.addEventListener('Loaded', function() {
         if (isPasswordVisible) {
             // Скрываем пароль
             passwordField.type = 'password';
-            toggleIcon.src = '/static/main/img/open.png';
+            toggleIcon.src = '/static/main/UnvisiblePass.png';
             toggleIcon.alt = 'Показать пароль';
             isPasswordVisible = false;
         } else {
             // Показываем пароль
             passwordField.type = 'text';
-            toggleIcon.src = '/static/main/img/close.png';
+            toggleIcon.src = '/static/main/VisiblePass.png';
             toggleIcon.alt = 'Скрыть пароль';
             isPasswordVisible = true;
         }
@@ -44,7 +44,7 @@ document.addEventListener('Loaded', function() {
     
     // Обработчик отправки формы
     loginForm.addEventListener('submit', function(e) {
-        const email = document.getElementById('email').value;
+        const email = document.getElementById('username').value;
         const password = passwordField.value;
         
         // Скрываем предыдущую ошибку
@@ -126,4 +126,29 @@ document.addEventListener('Loaded', function() {
             }
         });
     });
+    
+    // Обработчик для галочки "Запомнить меня"
+    const rememberMeCheckbox = document.getElementById('rememberMe');
+    const rememberMeLabel = document.querySelector('.remember-me-label');
+    
+    if (rememberMeCheckbox) {
+        // Добавляем звуковой эффект при клике (опционально)
+        rememberMeCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                // Можно добавить звук или другую обратную связь
+                console.log('Запомнить меня активировано');
+            } else {
+                console.log('Запомнить меня деактивировано');
+            }
+        });
+        
+        // Добавляем анимацию при клике на текст
+        rememberMeLabel.addEventListener('click', function(e) {
+            // Небольшая задержка для визуального эффекта
+            setTimeout(() => {
+                rememberMeCheckbox.checked = !rememberMeCheckbox.checked;
+                rememberMeCheckbox.dispatchEvent(new Event('change'));
+            }, 50);
+        });
+    }
 }); 
