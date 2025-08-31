@@ -14,6 +14,7 @@ urlpatterns = [
     path('media/', views.media, name='media_view'),
     # path('check-doc-data/<int:user_id>/', views.check_doc_data, name='check_doc_data'),
     path('generate-doc/<int:user_id>/', views.generate_doc, name='generate_doc'),
+    path('get_history/', views.get_history, name='get_history'),
     path('city-autocomplete/', views.city_autocomplete, name='city_autocomplete')
     
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

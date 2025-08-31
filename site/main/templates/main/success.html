@@ -55,7 +55,7 @@
                 <div class="modal-content">
                     <span class="close" onclick="closeModal()">&times;</span>
                     <h2>Выберите шаблон документа</h2>
-                    <form method="post">
+                    <form id="docForm" method="post">
                         {% csrf_token %}
                         <input type="hidden" name="generate_doc_btn" value="1">
                         
@@ -71,12 +71,55 @@
                 </div>
             </div>
 
+            <script>
+            function loadHistory() {
+                fetch("{% url 'get_history' %}")
+                    .then(response => response.json())
+                    .then(data => {
+                        let tbody = document.querySelector(".history-table tbody");
+                        tbody.innerHTML = ""; // очистить старые строки
+
+                        if (data.length === 0) {
+                            tbody.innerHTML = `<tr class="empty-row">
+                                <td colspan="3" class="empty-message">Документов пока нет</td>
+                            </tr>`;
+                            return;
+                        }
+
+                        data.forEach(doc => {
+                            let row = `<tr>
+                                <td>${doc.template_name}</td>
+                                <td style="padding: 6px 8px; color: #666;">${doc.date}</td>
+                                <td><a href="/media/${doc.file}" download class="download-btn">📄</a></td>
+                            </tr>`;
+                            tbody.innerHTML += row;
+                        });
+                    });
+            }
+
+                document.addEventListener("DOMContentLoaded", function() {
+                const forms = [
+                    document.getElementById("docForm"),
+                    document.getElementById("doc_context_form") 
+                ];
+
+                forms.forEach(form => {
+                    if (form) {
+                        form.addEventListener("submit", function() {
+                            console.log(`Форма ${form.id} отправлена, обновляю историю...`);
+                            setTimeout(loadHistory, 2000);
+                        });
+                    }
+                });
+            })
+            </script>
+
             <!-- окно для ввода недостающих данных -->
             <div id="missingDataModal" class="modal" {% if lack_data %}style="display: block;"{% endif %}>
                 <div class="modal-content">
                     <span class="close" onclick="document.getElementById('missingDataModal').style.display='none'">&times;</span>
                     <h2>Заполните недостающие данные</h2>
-                    <form method="post">
+                    <form id="doc_context_form" method="post">
                         {% csrf_token %}
                         <input type="hidden" name="generate_doc_with_missing" value="1">
                         <input type="hidden" name="template" value="{{ template_file }}">
@@ -126,7 +169,7 @@
                         <tr>
                             <th>Название</th>
                             <th>Дата</th>
-                            <th>Действия</th>
+                            <th>Скачать</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -147,6 +190,7 @@
                 </table>
             </div>
         
+                
             <div style="margin-top: 10px; text-align: right;">
                 <form method="post" style="display: inline;">
                     {% csrf_token %}

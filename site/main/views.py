@@ -292,7 +292,8 @@ def parsing(username):
     
     else:
          return username
- 
+    
+# Сейчас не работает , какнить надо доделать
 def city_autocomplete(request):
 
     q = request.GET.get('q','')
@@ -472,6 +473,13 @@ def check_accept(user_id):
     return False
 # конец класса
 
+@login_required(login_url='registr')
+def get_history(request):
+    user_id = request.user.id
+    history = redis_client.load_progress(user_id) or []
+    return JsonResponse(history, safe=False)
+
+
 @never_cache
 # @login_required(login_url='registr')
 def success(request):
@@ -504,6 +512,7 @@ def success(request):
     add = []
 
     history = redis_client.load_progress(user_id)
+    print(history,"История")
 
     # history = GeneratedDocument.objects.filter(user_id=user_id).order_by('-created_at')
     # читаем шаблоны

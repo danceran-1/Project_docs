@@ -29,6 +29,7 @@ function toggleTheme() {
     updateThemeIcon(newTheme);
 }
 
+
 // Обновление иконки темы
 function updateThemeIcon(theme) {
     const btn = document.getElementById('theme-btn');
